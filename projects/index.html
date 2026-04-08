@@ -495,6 +495,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#-研究项目" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 研究项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 研究项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#rgb-to-raw-图像重建" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -504,19 +516,58 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#vla--raw-to-action" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#vision-language-action-vla--raw-to-action" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VLA / RAW-to-Action
+        Vision-Language-Action (VLA) / RAW-to-Action
       
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#lmcache-on-ascend-910b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LMCache on Ascend 910B
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentdriver---自主驾驶-ai-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AgentDriver - 自主驾驶 AI Agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
+  <a href="#-开源项目" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 开源项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 开源项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#autonomous-string-ai-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -526,23 +577,56 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#vllm-kv-cache-优化" class="md-nav__link">
+  <a href="#-竞赛项目" class="md-nav__link">
     <span class="md-ellipsis">
       
-        vLLM KV Cache 优化
+        🏆 竞赛项目
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🏆 竞赛项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llm-20-questions---rethinking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM 20 Questions - Rethinking
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#llm-20-questions" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#wsdm-cup---多语言聊天机器人竞赛" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLM 20 Questions
+        WSDM Cup - 多语言聊天机器人竞赛
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-技能总结" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 技能总结
       
     </span>
   </a>
@@ -613,21 +697,111 @@
 
 
 <h1 id="项目">项目<a class="headerlink" href="#项目" title="Permanent link">&para;</a></h1>
-<h2 id="rgb-to-raw-图像重建">RGB-to-RAW 图像重建<a class="headerlink" href="#rgb-to-raw-图像重建" title="Permanent link">&para;</a></h2>
-<p>研究基于 Unprocessing 的逆 ISP 管道，重建设计轻量级 ReRAW 风格模型，将 PSNR 从 52.81 提升至 56.98，SSIM 从 0.91 提升至 0.95。</p>
-<p>技术栈：Python, PyTorch, 图像处理, Inverse ISP, RAW 图像处理</p>
-<h2 id="vla--raw-to-action">VLA / RAW-to-Action<a class="headerlink" href="#vla--raw-to-action" title="Permanent link">&para;</a></h2>
-<p>评估 SpatialVLA 并在 Bridge 数据集上进行微调，将成功率从 34.5% 提升至 49.5%。共同设计 RawAdaptationModule（可学习的通道投影），将 4 通道 RAW 桥接至 RGB 预训练编码器，实现端到端 RAW-to-action 训练（0.21→0.36）。</p>
-<p>技术栈：Python, PyTorch, 具身智能, SpatialVLA, Domain Adaptation</p>
-<h2 id="autonomous-string-ai-agent">Autonomous String AI Agent<a class="headerlink" href="#autonomous-string-ai-agent" title="Permanent link">&para;</a></h2>
-<p>开源项目，设计多智能体自动驾驶系统，采用闭环 Perception-Memory-Reasoning-Planning 架构。 Perception Agent 使用检测和地图工具，Memory Agent 维护驾驶规则数据库，Planning Agent 输出 6 点轨迹表示未来 3 秒路径。</p>
-<p>技术栈：Python, vLLM, Qwen, LLaMA, Multi-Agent Systems</p>
-<h2 id="vllm-kv-cache-优化">vLLM KV Cache 优化<a class="headerlink" href="#vllm-kv-cache-优化" title="Permanent link">&para;</a></h2>
-<p>集成 CacheBlend 技术到 DeepResearch 推理管道，在 Ascend 910B 上实现比 vLLM prefix cache 更高的 KV hit rate。</p>
-<p>技术栈：Python, vLLM, LMCache, Ascend 910B, KV Cache</p>
-<h2 id="llm-20-questions">LLM 20 Questions<a class="headerlink" href="#llm-20-questions" title="Permanent link">&para;</a></h2>
-<p>构建 GRPO 训练环境，实现多智能体协作架构（Questioner/Answerer/Analyzer），将准确率从 42% 提升至 83%。开发 RLAIF 奖励函数结合规则约束和 AI 反馈。</p>
-<p>技术栈：Python, GRPO, LLaMA, Multi-Agent, RLAIF</p>
+<h2 id="-研究项目">🎯 研究项目<a class="headerlink" href="#-研究项目" title="Permanent link">&para;</a></h2>
+<h3 id="rgb-to-raw-图像重建">RGB-to-RAW 图像重建<a class="headerlink" href="#rgb-to-raw-图像重建" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：研究项目 | <strong>时间</strong>：Huawei Singapore Research Center</p>
+<p>重建基于 Unprocessing 的逆 ISP 管道，设计轻量级 ReRAW 风格模型。</p>
+<p><strong>关键成果</strong>：
+- PSNR：52.81 → 56.98 ⬆️
+- SSIM：0.91 → 0.95 ⬆️
+- 开发多线程 RAW 分布间隙分析器
+- 构建降级基准测试展示高保真 RAW 的优势</p>
+<p><strong>技术栈</strong>：Python, PyTorch, 图像处理, Inverse ISP, RAW 图像处理</p>
+<hr />
+<h3 id="vision-language-action-vla--raw-to-action">Vision-Language-Action (VLA) / RAW-to-Action<a class="headerlink" href="#vision-language-action-vla--raw-to-action" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：研究项目 | <strong>时间</strong>：Huawei Singapore Research Center</p>
+<p>评估 SpatialVLA 并在 Bridge 数据集上进行微调，实现端到端 RAW-to-action 训练。</p>
+<p><strong>关键成果</strong>：
+- 成功率：34.5% → 49.5% ⬆️
+- 设计 RawAdaptationModule（可学习的通道投影）
+- 将 4 通道 RAW 桥接至 RGB 预训练编码器
+- 端到端性能：0.21 → 0.36 ⬆️</p>
+<p><strong>技术栈</strong>：Python, PyTorch, 具身智能, SpatialVLA, Domain Adaptation</p>
+<hr />
+<h3 id="lmcache-on-ascend-910b">LMCache on Ascend 910B<a class="headerlink" href="#lmcache-on-ascend-910b" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：研究项目 | <strong>时间</strong>：Huawei Singapore Research Center</p>
+<p>集成 CacheBlend 技术到 DeepResearch 推理管道，在华为 Ascend 910B 上实现高效 KV Cache 管理。</p>
+<p><strong>关键成果</strong>：
+- KV hit rate 超越 vLLM prefix cache
+- 优化 vLLM-Ascend 调度器
+- 提升推理效率</p>
+<p><strong>技术栈</strong>：Python, vLLM, LMCache, Ascend 910B, KV Cache</p>
+<hr />
+<h3 id="agentdriver---自主驾驶-ai-agent">AgentDriver - 自主驾驶 AI Agent<a class="headerlink" href="#agentdriver---自主驾驶-ai-agent" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：研究项目 | <strong>时间</strong>：Huawei Singapore Research Center</p>
+<p>迁移完整自主驾驶栈到华为 Ascend 平台，集成大语言模型进行决策。</p>
+<p><strong>关键成果</strong>：
+- 完整栈迁移到 Ascend 910B
+- 集成 Qwen2.5-32B 作为主决策模型
+- 通过 MindSpeed-LLM 微调 LLaMA2-7B
+- 重新设计位置聚类索引的内存检索
+- 优化 vLLM-Ascend 调度器</p>
+<p><strong>技术栈</strong>：Python, vLLM, Qwen, LLaMA, Ascend 910B, MindSpeed-LLM</p>
+<hr />
+<h2 id="-开源项目">🚀 开源项目<a class="headerlink" href="#-开源项目" title="Permanent link">&para;</a></h2>
+<h3 id="autonomous-string-ai-agent">Autonomous String AI Agent<a class="headerlink" href="#autonomous-string-ai-agent" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：开源项目 | <strong>GitHub</strong>：<a href="https://github.com/GoDiao">@GoDiao</a></p>
+<p>设计多智能体自动驾驶系统，采用闭环 Perception-Memory-Reasoning-Planning 架构。</p>
+<p><strong>架构设计</strong>：
+- <strong>Perception Agent</strong>：使用检测和地图工具
+- <strong>Memory Agent</strong>：维护驾驶规则数据库
+- <strong>Planning Agent</strong>：输出 6 点轨迹表示未来 3 秒路径</p>
+<p><strong>技术栈</strong>：Python, vLLM, Qwen, LLaMA, Multi-Agent Systems</p>
+<hr />
+<h2 id="-竞赛项目">🏆 竞赛项目<a class="headerlink" href="#-竞赛项目" title="Permanent link">&para;</a></h2>
+<h3 id="llm-20-questions---rethinking">LLM 20 Questions - Rethinking<a class="headerlink" href="#llm-20-questions---rethinking" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：竞赛项目 | <strong>时间</strong>：2025</p>
+<p>构建 GRPO 训练环境，实现多智能体协作架构。</p>
+<p><strong>关键成果</strong>：
+- 从零开始构建完整游戏环境交互循环
+- 多智能体协作架构（Questioner/Answerer/Analyzer）
+- 准确率：42% → 83% ⬆️
+- 开发 RLAIF 奖励函数结合规则约束和 AI 反馈</p>
+<p><strong>技术栈</strong>：Python, GRPO, LLaMA, Multi-Agent, RLAIF</p>
+<hr />
+<h3 id="wsdm-cup---多语言聊天机器人竞赛">WSDM Cup - 多语言聊天机器人竞赛<a class="headerlink" href="#wsdm-cup---多语言聊天机器人竞赛" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：竞赛项目 | <strong>排名</strong>：154/950 | <strong>时间</strong>：Dec 2024 - Feb 2025</p>
+<p>微调大语言模型进行多语言分类任务。</p>
+<p><strong>关键成果</strong>：
+- 微调 Gemma2-9b-it 进行多语言分类
+- 应用 LoRA 和 int4 量化实现高效部署</p>
+<p><strong>技术栈</strong>：Python, PyTorch, Gemma, LoRA, Quantization</p>
+<hr />
+<h2 id="-技能总结">📊 技能总结<a class="headerlink" href="#-技能总结" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>深度学习</strong></td>
+<td>PyTorch, PEFT, MindSpeed-LLM</td>
+</tr>
+<tr>
+<td><strong>LLM 框架</strong></td>
+<td>vLLM, LMCache, Qwen, LLaMA</td>
+</tr>
+<tr>
+<td><strong>计算机视觉</strong></td>
+<td>Inverse ISP, RAW Processing, SpatialVLA</td>
+</tr>
+<tr>
+<td><strong>AI 系统</strong></td>
+<td>Agentic AI, Multi-Agent, RLAIF</td>
+</tr>
+<tr>
+<td><strong>硬件平台</strong></td>
+<td>Ascend 910B, GPU 优化</td>
+</tr>
+<tr>
+<td><strong>编程语言</strong></td>
+<td>Python, SQL, TCL, JavaScript</td>
+</tr>
+</tbody>
+</table>
 
 
 
