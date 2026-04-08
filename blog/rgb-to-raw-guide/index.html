@@ -10,25 +10,27 @@
       
       
       
+        <link rel="canonical" href="https://godiao.github.io/blog/rgb-to-raw-guide/">
+      
       
       
       
         
       
       
-      <link rel="icon" href="/assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Diao Shengjia's Blog</title>
+        <title>RGB-to-RAW 重建实践总结 - Diao Shengjia's Blog</title>
       
     
     
-      <link rel="stylesheet" href="/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -47,9 +49,9 @@
       
     
     
-      <link rel="stylesheet" href="/stylesheets/main.css">
+      <link rel="stylesheet" href="../../stylesheets/main.css">
     
-    <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -94,6 +96,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#rgb-to-raw-重建实践总结" class="md-skip">
+          跳转至
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -106,7 +113,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="/." title="Diao Shengjia&#39;s Blog" class="md-header__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+    <a href="../.." title="Diao Shengjia&#39;s Blog" class="md-header__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -126,7 +133,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              RGB-to-RAW 重建实践总结
             
           </span>
         </div>
@@ -231,7 +238,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -250,7 +257,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/blog/" class="md-tabs__link">
+      <a href="../" class="md-tabs__link">
         
   
   
@@ -269,7 +276,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/about/" class="md-tabs__link">
+      <a href="../../about/" class="md-tabs__link">
         
   
   
@@ -288,7 +295,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/projects/" class="md-tabs__link">
+      <a href="../../projects/" class="md-tabs__link">
         
   
   
@@ -307,7 +314,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/tools/" class="md-tabs__link">
+      <a href="../../tools/" class="md-tabs__link">
         
   
   
@@ -337,7 +344,9 @@
           
             
               
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -348,7 +357,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/." title="Diao Shengjia&#39;s Blog" class="md-nav__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+    <a href="../.." title="Diao Shengjia&#39;s Blog" class="md-nav__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -378,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -405,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/blog/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
@@ -432,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/about/" class="md-nav__link">
+      <a href="../../about/" class="md-nav__link">
         
   
   
@@ -459,7 +468,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/projects/" class="md-nav__link">
+      <a href="../../projects/" class="md-nav__link">
         
   
   
@@ -486,7 +495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/tools/" class="md-nav__link">
+      <a href="../../tools/" class="md-nav__link">
         
   
   
@@ -514,6 +523,8 @@
             
             
               
+                
+              
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -523,6 +534,110 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#概述" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        概述
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#背景" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        背景
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#技术方案" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        技术方案
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="技术方案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-unprocessing-管道" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Unprocessing 管道
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-reraw-模型" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ReRAW 模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-多线程-raw-分析" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 多线程 RAW 分析
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#关键收获" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        关键收获
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#后续方向" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        后续方向
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -535,6 +650,8 @@
               
                 
 
+  
+
 
 
   
@@ -543,8 +660,78 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
+  
 
+
+
+  
+  
+
+
+<h1 id="rgb-to-raw-重建实践总结">RGB-to-RAW 重建实践总结<a class="headerlink" href="#rgb-to-raw-重建实践总结" title="Permanent link">&para;</a></h1>
+<p><strong>发布时间</strong>：2025-01-15 | <strong>分类</strong>：计算机视觉</p>
+<h2 id="概述">概述<a class="headerlink" href="#概述" title="Permanent link">&para;</a></h2>
+<p>在华为新加坡研究中心的实习期间，我深入研究了 RGB-to-RAW 图像重建技术，这篇文章总结了核心经验和技术细节。</p>
+<h2 id="背景">背景<a class="headerlink" href="#背景" title="Permanent link">&para;</a></h2>
+<p>传统的图像处理流程是 RAW → ISP → RGB。而我们的任务是反向的：从 RGB 图像重建出 RAW 格式。</p>
+<p><strong>为什么这很重要？</strong></p>
+<ul>
+<li>RAW 格式保留了更多的原始信息</li>
+<li>对于后续的 AI 模型训练更有利</li>
+<li>可以用于数据增强和域适应</li>
+</ul>
+<h2 id="技术方案">技术方案<a class="headerlink" href="#技术方案" title="Permanent link">&para;</a></h2>
+<h3 id="1-unprocessing-管道">1. Unprocessing 管道<a class="headerlink" href="#1-unprocessing-管道" title="Permanent link">&para;</a></h3>
+<p>基于论文 <a href="https://arxiv.org/abs/1811.11721">Unprocessing Images for Learned Raw Denoising</a>，我们实现了逆 ISP 管道。</p>
+<p>核心步骤：
+* 色彩空间转换（RGB → Bayer）
+* 去马赛克处理
+* 噪声建模</p>
+<h3 id="2-reraw-模型">2. ReRAW 模型<a class="headerlink" href="#2-reraw-模型" title="Permanent link">&para;</a></h3>
+<p>设计了一个轻量级的神经网络模型，在保持效率的同时提升重建质量。</p>
+<p><strong>性能指标</strong>：
+* PSNR：52.81 → 56.98 ⬆️
+* SSIM：0.91 → 0.95 ⬆️</p>
+<h3 id="3-多线程-raw-分析">3. 多线程 RAW 分析<a class="headerlink" href="#3-多线程-raw-分析" title="Permanent link">&para;</a></h3>
+<p>开发了分布间隙分析器，用于评估不同 RAW 格式的特性。</p>
+<h2 id="关键收获">关键收获<a class="headerlink" href="#关键收获" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>理解 ISP 流程很关键</strong> - 需要深入理解图像处理的每一步</li>
+<li><strong>数据质量决定模型效果</strong> - 高保真 RAW 数据对训练至关重要</li>
+<li><strong>性能与质量的平衡</strong> - 需要在推理速度和重建质量之间找到平衡点</li>
+</ol>
+<h2 id="后续方向">后续方向<a class="headerlink" href="#后续方向" title="Permanent link">&para;</a></h2>
+<ul>
+<li>探索更高效的模型架构</li>
+<li>支持更多的 RAW 格式</li>
+<li>集成到端到端的 VLA 系统中</li>
+</ul>
+<hr />
+<p><strong>相关资源</strong>：
+* <a href="/projects/#rgb-to-raw-图像重建">项目详情</a>
+* <a href="https://github.com/GoDiao">GitHub</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+  
+
+
+  
+
+
+<h2 id="__comments">评论</h2>
+<!-- Comments section - to be configured -->
+                
               </article>
             </div>
           
@@ -609,12 +796,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "header.autohide", "navigation.path", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "header.autohide", "navigation.path", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
-      <script src="/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="/javascripts/mathjax.js"></script>
+        <script src="../../javascripts/mathjax.js"></script>
       
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
       
