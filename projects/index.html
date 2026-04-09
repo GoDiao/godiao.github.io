@@ -579,10 +579,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#agentdriver---自主驾驶-ai-agent" class="md-nav__link">
+  <a href="#agentdriver---自动驾驶-ai-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentDriver - 自主驾驶 AI Agent
+        AgentDriver - 自动驾驶 AI Agent
       
     </span>
   </a>
@@ -605,6 +605,17 @@
   
     <nav class="md-nav" aria-label="开源项目">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paper-reader-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper Reader Agent
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#ai-interview-agent" class="md-nav__link">
@@ -781,10 +792,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#agentdriver---自主驾驶-ai-agent" class="md-nav__link">
+  <a href="#agentdriver---自动驾驶-ai-agent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentDriver - 自主驾驶 AI Agent
+        AgentDriver - 自动驾驶 AI Agent
       
     </span>
   </a>
@@ -807,6 +818,17 @@
   
     <nav class="md-nav" aria-label="开源项目">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#paper-reader-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paper Reader Agent
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#ai-interview-agent" class="md-nav__link">
@@ -943,9 +965,8 @@
 </ul>
 <p><strong>技术栈</strong>：Python, vLLM, LMCache, Ascend 910B, KV Cache</p>
 <hr />
-<h3 id="agentdriver---自主驾驶-ai-agent">AgentDriver - 自主驾驶 AI Agent<a class="headerlink" href="#agentdriver---自主驾驶-ai-agent" title="Permanent link">&para;</a></h3>
+<h3 id="agentdriver---自动驾驶-ai-agent">AgentDriver - 自动驾驶 AI Agent<a class="headerlink" href="#agentdriver---自动驾驶-ai-agent" title="Permanent link">&para;</a></h3>
 <p><strong>类型</strong>：研究项目 | <strong>时间</strong>：Huawei Singapore Research Center</p>
-<p>迁移完整自主驾驶栈到华为 Ascend 平台，集成大语言模型进行决策。</p>
 <p><strong>关键成果</strong>：</p>
 <ul>
 <li>完整栈迁移到 Ascend 910B</li>
@@ -957,9 +978,43 @@
 <p><strong>技术栈</strong>：Python, vLLM, Qwen, LLaMA, Ascend 910B, MindSpeed-LLM</p>
 <hr />
 <h2 id="开源项目">开源项目<a class="headerlink" href="#开源项目" title="Permanent link">&para;</a></h2>
+<h3 id="paper-reader-agent">Paper Reader Agent<a class="headerlink" href="#paper-reader-agent" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：开源项目 | <strong>GitHub</strong>：<a href="https://github.com/GoDiao/Paper-Reader">GoDiao/Paper-Reader</a> | <strong>Stars</strong>: ⭐</p>
+<p>分层多智能体系统，用于学术论文深度分析和AI驱动的网络研究。</p>
+<p><img alt="Paper Reader界面" src="../images/webui_en.png" /></p>
+<p><strong>核心功能</strong>：</p>
+<ul>
+<li><strong>分层多智能体架构（1+3+1）</strong> - 模拟专业研究团队</li>
+<li>Architect：解构论文并规划阅读策略</li>
+<li>Specialist Team：Context、Math、Data三个并行专家</li>
+<li>Editor：合成出版级报告并嵌入图表</li>
+<li><strong>视觉理解</strong> - 检测、提取并"看见"图表，直接嵌入分析中</li>
+<li><strong>Deep Research</strong> - 基于Tavily和Valyu的AI网络研究工具</li>
+<li><strong>双语报告</strong> - 同时生成英文和中文原生质量报告</li>
+</ul>
+<p><img alt="系统架构" src="../images/archv1.png" /></p>
+<p><strong>技术架构</strong>：</p>
+<ul>
+<li><strong>后端</strong>：FastAPI + 异步编排 + 多智能体系统</li>
+<li><strong>前端</strong>：现代Web UI + 实时进度追踪</li>
+<li><strong>PDF解析</strong>：PyMuPDF（快速）/ MinerU（高保真）双引擎</li>
+<li><strong>LLM</strong>：DeepSeek / OpenAI兼容API</li>
+</ul>
+<p><img alt="报告预览" src="../images/report_preview.png" /></p>
+<p><strong>关键特性</strong>：</p>
+<ul>
+<li>智能PDF解析管道（表格提取、数学公式区域检测）</li>
+<li>实时流式响应（逐token生成报告）</li>
+<li>迭代分析与Gap Agent（自动识别信息缺口）</li>
+<li>一键导出到Notion（原生表格、LaTeX公式）</li>
+<li>研究历史管理（浏览、搜索、删除）</li>
+<li>多种引用格式（Numbered、APA、MLA、Chicago）</li>
+</ul>
+<p><strong>项目链接</strong>：<a href="https://github.com/GoDiao/Paper-Reader">GitHub仓库</a></p>
+<hr />
 <h3 id="ai-interview-agent">AI Interview Agent<a class="headerlink" href="#ai-interview-agent" title="Permanent link">&para;</a></h3>
 <p><strong>类型</strong>：开源项目 | <strong>GitHub</strong>：<a href="https://github.com/GoDiao/ai-interview-agent">GoDiao/ai-interview-agent</a> | <strong>Stars</strong>: ⭐</p>
-<p>一个智能面试助手系统，通过持久化候选人档案实现跨会话的成长追踪。</p>
+<p>智能面试助手系统，通过持久化候选人档案实现跨会话的成长追踪。</p>
 <p><img alt="面试界面" src="../images/interview_page.png" /></p>
 <p><strong>核心功能</strong>：</p>
 <ul>
