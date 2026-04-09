@@ -603,6 +603,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="开源项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-interview-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Interview Agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -788,6 +805,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="开源项目">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-interview-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Interview Agent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -923,7 +957,35 @@
 <p><strong>技术栈</strong>：Python, vLLM, Qwen, LLaMA, Ascend 910B, MindSpeed-LLM</p>
 <hr />
 <h2 id="开源项目">开源项目<a class="headerlink" href="#开源项目" title="Permanent link">&para;</a></h2>
-<p>暂时空</p>
+<h3 id="ai-interview-agent">AI Interview Agent<a class="headerlink" href="#ai-interview-agent" title="Permanent link">&para;</a></h3>
+<p><strong>类型</strong>：开源项目 | <strong>GitHub</strong>：<a href="https://github.com/GoDiao/ai-interview-agent">GoDiao/ai-interview-agent</a> | <strong>Stars</strong>: ⭐</p>
+<p>一个智能面试助手系统，通过持久化候选人档案实现跨会话的成长追踪。</p>
+<p><img alt="面试界面" src="../images/interview_page.png" /></p>
+<p><strong>核心功能</strong>：</p>
+<ul>
+<li><strong>持久化候选人档案</strong> - 每次面试自动更新候选人成长轨迹</li>
+<li><strong>智能问题追踪</strong> - 自动标记新问题、重复问题、已解决问题</li>
+<li><strong>学习看板</strong> - 可视化展示候选人需要改进的领域</li>
+<li><strong>趋势分析</strong> - Dashboard展示分数趋势、问题分布、经验热力图</li>
+</ul>
+<p><img alt="候选人Dashboard" src="../images/dashboard.png" /></p>
+<p><strong>技术架构</strong>：</p>
+<ul>
+<li><strong>后端</strong>：FastAPI + Pydantic + 异步编排</li>
+<li><strong>前端</strong>：HTML/CSS/JS + Chart.js</li>
+<li><strong>存储</strong>：JSON分片存储架构</li>
+<li><strong>LLM</strong>：OpenAI兼容API</li>
+</ul>
+<p><img alt="报告页面" src="../images/report_page_head.png" /></p>
+<p><strong>关键特性</strong>：</p>
+<ul>
+<li>显式状态机面试流程（intro → technical → personality → report）</li>
+<li>候选人库按 <code>name + email</code> 索引实现跨会话连续性</li>
+<li>自动会后复盘（重复问题、新问题、已修复问题）</li>
+<li>从原始Q&amp;A回填档案，渐进式完善独立库档案</li>
+<li>分片存储架构：将庞大的 <code>candidate.json</code> 分解为可维护文件</li>
+</ul>
+<p><strong>项目链接</strong>：<a href="https://github.com/GoDiao/ai-interview-agent">GitHub仓库</a></p>
 <hr />
 <h2 id="竞赛项目">竞赛项目<a class="headerlink" href="#竞赛项目" title="Permanent link">&para;</a></h2>
 <h3 id="llm-20-questions---rethinking">LLM 20 Questions - Rethinking<a class="headerlink" href="#llm-20-questions---rethinking" title="Permanent link">&para;</a></h3>
