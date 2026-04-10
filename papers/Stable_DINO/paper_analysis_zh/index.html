@@ -1,0 +1,801 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Diao Shengjia 的技术博客">
+      
+      
+      
+        <link rel="canonical" href="https://godiao.github.io/papers/Stable_DINO/paper_analysis_zh/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>📄 Detection Transformer with Stable Matching - Diao Shengjia's Blog</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/main.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3109FRSVTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3109FRSVTT');
+</script>
+
+<script
+    src="https://analytics.jiege.pro/api/script.js"
+    data-site-id="1"
+    defer
+></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#-detection-transformer-with-stable-matching" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-header__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Diao Shengjia's Blog
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              📄 Detection Transformer with Stable Matching
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black"  aria-label="切换至深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="grey"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../blog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  博客
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  论文笔记
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  关于
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  项目
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  工具
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-nav__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Diao Shengjia's Blog
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    博客
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    关于
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="-detection-transformer-with-stable-matching">📄 Detection Transformer with Stable Matching<a class="headerlink" href="#-detection-transformer-with-stable-matching" title="Permanent link">&para;</a></h1>
+<h1 id="stable-dino基于位置监督损失的detr稳定匹配方法分析">Stable-DINO：基于位置监督损失的DETR稳定匹配方法分析<a class="headerlink" href="#stable-dino基于位置监督损失的detr稳定匹配方法分析" title="Permanent link">&para;</a></h1>
+<h2 id="概要tldr">概要（TL;DR）<a class="headerlink" href="#概要tldr" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>核心问题</strong>：DETR类模型中的一对一匈牙利匹配策略存在“多优化路径问题”，导致训练不稳定和收敛缓慢。</li>
+<li><strong>解决方案</strong>：提出<strong>位置监督损失</strong>，仅使用位置度量（如IoU）来监督分类分数，消除优化冲突；并引入<strong>位置调制匹配成本</strong>和<strong>内存融合</strong>技术以加速收敛。</li>
+<li><strong>关键成果</strong>：在COCO基准上，Stable-DINO将DINO的AP提升了1.4个百分点（ResNet-50），且收敛速度显著加快，代码已开源。</li>
+</ul>
+<h2 id="-研究背景与动机">📚 研究背景与动机<a class="headerlink" href="#-研究背景与动机" title="Permanent link">&para;</a></h2>
+<p>目标检测是计算机视觉的基础任务。以CNN为主的传统方法依赖锚框、非极大值抑制等手工组件。Detection Transformer (DETR) 的提出带来了革命，它利用Transformer架构和匈牙利匹配，实现了端到端的集合预测，消除了手工设计。然而，DETR也带来了新挑战，主要是<strong>收敛速度慢</strong>和<strong>性能欠佳</strong>。</p>
+<p>后续研究（如Deformable DETR, DINO）通过可变形注意力、查询锚点、去噪辅助任务等技术改善了收敛性，但都未触及一个根本性问题：<strong>一对一匈牙利匹配策略内在的训练不稳定性</strong>。</p>
+<p>本文指出，这种不稳定性的根源在于 <strong>“多优化路径问题”</strong> 。当两个不完美的预测（一个定位准但分类分数低，另一个定位差但分类分数高）竞争同一个真实目标时，标准匹配和损失函数会产生相互冲突的监督信号。模型会根据随机匹配到的预测，走上两条截然不同的优化路径，导致训练不一致且低效。</p>
+<p>先前工作的局限在于，它们要么忽略了此问题，要么只是间接处理（如DN-DETR通过去噪任务），而<strong>缺乏对损失函数本身的原则性分析和修改</strong>。</p>
+<p>本文的关键洞见是：<strong>在端到端的一对一匹配框架下，要确保训练稳定高效，正样本的分类分数必须仅由其定位精度（如IoU）来监督，而不能由其自身预测的分类分数来监督</strong>。这打破了循环依赖，消除了冲突路径，使DETR的优化目标与传统检测器（先基于位置选择正样本）重新对齐。</p>
+<p><img alt="Figure_3" src="../images/Figure_3.png" /></p>
+<p><em>直观展示DINO与Stable-DINO在匹配稳定性上的对比</em></p>
+<h2 id="-方法详解">🔬 方法详解<a class="headerlink" href="#-方法详解" title="Permanent link">&para;</a></h2>
+<p>Stable-DINO的核心是重新设计分类损失和匹配成本，以解决多优化路径问题。</p>
+<h3 id="1-位置监督损失">1. 位置监督损失<a class="headerlink" href="#1-位置监督损失" title="Permanent link">&para;</a></h3>
+<p>传统DETR的分类损失（Focal Loss）强制所有正样本的分类分数趋近于1：
+$$
+L_{\text{cls}} = \sum_{i=1}^{N_{\text{pos}}} |1 - p_i|^\gamma \text{BCE}(p_i, 1) + \sum_{i=1}^{N_{\text{neg}}} p_i^\gamma \text{BCE}(p_i, 0)
+$$
+其中 <span class="arithmatex">\(p_i\)</span> 是预测的分类概率。</p>
+<p><strong>位置监督损失</strong> 则用位置度量 <span class="arithmatex">\(s_i\)</span>（如IoU）的函数 <span class="arithmatex">\(f_1(s_i)\)</span> 来替代固定目标“1”：
+$$
+L_{\text{cls}}^{\text{(new)}} = \sum_{i=1}^{N_{\text{pos}}} \left(|f_1(s_i) - p_i|^\gamma \text{BCE}(p_i, f_1(s_i))\right) + \sum_{i=1}^{N_{\text{neg}}} p_i^\gamma \text{BCE}(p_i, 0)
+$$
+这里 <span class="arithmatex">\(f_1(s) = \varepsilon(s^2)\)</span>，是一个凸函数变换。<strong>其物理意义是：一个预测的分类目标值应与其定位质量成正比（高IoU则目标值高），而非盲目追求1.0。</strong></p>
+<h3 id="2-位置调制匹配成本">2. 位置调制匹配成本<a class="headerlink" href="#2-位置调制匹配成本" title="Permanent link">&para;</a></h3>
+<p>在匈牙利匹配阶段，匹配成本决定了预测与真实目标的对应关系。标准分类匹配成本为：
+$$
+C_{\text{cls}}(i, j) = |1 - p_i|^\gamma \text{BCE}(p_i, 1) - p_i^\gamma \text{BCE}(1-p_i, 1)
+$$
+<strong>位置调制匹配成本</strong> 将原始分类分数 <span class="arithmatex">\(p_i\)</span> 用位置质量 <span class="arithmatex">\(s_i'\)</span>（调整后的GIoU）进行调制：
+$$
+C_{\text{cls}}^{\text{(new)}}(i, j) = |1 - p_i f_2(s_i')|^\gamma \text{BCE}(p_i f_2(s_i'), 1) - (p_i f_2(s_i'))^\gamma \text{BCE}(1 - p_i f_2(s_i'), 1)
+$$
+其中 <span class="arithmatex">\(f_2(s) = s^{0.5}\)</span>。<strong>其作用是降低定位差的预测在匹配中的竞争力，促使匹配结果更倾向于定位准确的预测。</strong></p>
+<h3 id="3-内存融合">3. 内存融合<a class="headerlink" href="#3-内存融合" title="Permanent link">&para;</a></h3>
+<p>为了加速早期收敛，论文提出了特征层面的内存融合技术。由于Transformer编码器是随机初始化的，而主干网络是预训练的，早期训练时编码器特征质量不高。内存融合将主干网络提取的丰富特征与编码器输出进行融合，使解码器能立即利用预训练特征。</p>
+<p><img alt="Figure_4" src="../images/Figure_4.png" /></p>
+<p><em>展示三种内存融合策略：(a)原始，(b)简单融合，(c)U型融合，(d)密集融合</em></p>
+<p>三种融合方式（简单、U型、密集）均通过拼接和线性投影实现，<strong>不引入额外参数</strong>。实验表明，密集融合效果最佳。</p>
+<h2 id="-实验验证">📊 实验验证<a class="headerlink" href="#-实验验证" title="Permanent link">&para;</a></h2>
+<p>实验在COCO 2017等标准数据集上进行，以平均精度（AP）为主要评价指标。</p>
+<h3 id="主要结果">主要结果<a class="headerlink" href="#主要结果" title="Permanent link">&para;</a></h3>
+<p><strong>在ResNet-50主干网络上（12轮训练）：</strong>
+- DINO-4scale基线：49.0 AP
+- Stable-DINO-4scale：<strong>50.4 AP</strong> （+1.4 AP）
+- Stable-DINO-5scale：<strong>50.5 AP</strong> （+1.1 AP）</p>
+<p><strong>在更大的Swin-L主干网络上（12轮训练）：</strong>
+- DINO-4scale基线：56.8 AP
+- Stable-DINO-4scale：<strong>57.7 AP</strong> （+0.9 AP）</p>
+<p>提升幅度在目标检测领域被认为是<strong>显著且具有实际意义</strong>的。</p>
+<p><img alt="Figure_1" src="../images/Figure_1.png" /></p>
+<p><em>展示Stable-DINO与多种基线方法在ResNet-50和Swin-L主干上的性能对比</em></p>
+<h3 id="消融实验">消融实验<a class="headerlink" href="#消融实验" title="Permanent link">&para;</a></h3>
+<p>各组件贡献如下（基于ResNet-50）：
+1.  DINO基线：49.0 AP
+2.  + NMS (0.8)：49.2 AP （+0.2）
+3.  + 位置监督损失：49.8 AP （+0.6）
+4.  + 位置调制匹配成本：50.2 AP （+0.4）
+5.  + 密集内存融合：50.4 AP （+0.2）</p>
+<p><strong>位置监督损失是性能提升的最主要贡献者。</strong></p>
+<h3 id="收敛速度分析">收敛速度分析<a class="headerlink" href="#收敛速度分析" title="Permanent link">&para;</a></h3>
+<p>Stable-DINO，尤其是结合了密集内存融合后，展现出<strong>更快的收敛速度</strong>。在训练早期，其性能提升明显快于原始DINO。</p>
+<p><img alt="Figure_5" src="../images/Figure_5.png" /></p>
+<p><em>对比DINO与加入密集内存融合的DINO的收敛曲线</em></p>
+<p><img alt="Figure_8" src="../images/Figure_8.png" /></p>
+<p><em>对比DINO与Stable-DINO的收敛速度</em></p>
+<h3 id="泛化性验证">泛化性验证<a class="headerlink" href="#泛化性验证" title="Permanent link">&para;</a></h3>
+<p>方法在多种DETR变体（Deformable-DETR, DAB-Deformable-DETR, H-DETR, MaskDINO）上均取得一致提升（+0.6 至 +1.3 AP），证明了其通用性。</p>
+<p><img alt="Table_5" src="../images/Table_5.png" /></p>
+<p><em>展示方法在其他DETR变体上的有效性</em></p>
+<h3 id="可复现性评估">可复现性评估<a class="headerlink" href="#可复现性评估" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>代码</strong>：已在GitHub开源 (<code>https://github.com/IDEA-Research/Stable-DINO</code>)。</li>
+<li><strong>框架</strong>：基于detrex开发。</li>
+<li><strong>超参数</strong>：学习率、随机种子（60）、损失权重等关键参数已明确给出。</li>
+<li><strong>风险点</strong>：批次大小、具体硬件需求等细节未在论文中说明，需参考代码实现。</li>
+</ul>
+<p><strong>总体可复现性评分：中等偏高（7/10）。</strong></p>
+<h2 id="-核心要点">💡 核心要点<a class="headerlink" href="#-核心要点" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>直击根本</strong>：首次明确并系统解决了DETR类模型因一对一匹配导致的“多优化路径”训练不稳定问题。</li>
+<li><strong>简洁有效</strong>：核心修改（位置监督损失）概念清晰、实现简单，无需复杂结构改动，却能带来显著性能提升。</li>
+<li><strong>加速收敛</strong>：提出的内存融合技术有效利用了预训练主干特征，大幅加快了模型训练早期的收敛过程。</li>
+<li><strong>通用性强</strong>：方法不依赖于特定架构，在多种DETR变体上均验证有效，具有良好的可迁移性。</li>
+<li><strong>开源可复现</strong>：论文提供了完整的代码实现和关键训练细节，为社区研究和应用提供了便利。</li>
+</ol>
+<h2 id="-未来方向与局限性">🔮 未来方向与局限性<a class="headerlink" href="#-未来方向与局限性" title="Permanent link">&para;</a></h2>
+<p><strong>局限性：</strong>
+1.  <strong>实验细节缺失</strong>：论文未报告批量大小、GPU需求、训练时间等工程细节，也未提供多次运行结果的方差，统计严谨性可进一步加强。
+2.  <strong>比较公平性</strong>：部分对比实验中，Stable-DINO使用了NMS（贡献+0.2 AP）或训练轮数不同，需注意对比条件。
+3.  <strong>理论深度</strong>：方法虽有效，但理论分析相对直观，更深入的收敛性理论证明是未来的方向。
+4.  <strong>范围限定</strong>：方法主要针对DETR家族模型，其思想与传统检测器的结合潜力有待探索。</p>
+<p><strong>未来方向：</strong>
+1.  <strong>理论拓展</strong>：为位置监督损失提供更严格的理论收敛性保证。
+2.  <strong>跨范式应用</strong>：探索将“基于位置监督分类”的思想应用于其他存在匹配冲突的视觉任务，如实例分割、姿态估计。
+3.  <strong>效率优化</strong>：进一步研究更高效的特征融合方式，或探索在训练后期动态关闭融合以降低计算开销。
+4.  <strong>损失函数设计</strong>：研究更优的变换函数 <span class="arithmatex">\(f_1\)</span>, <span class="arithmatex">\(f_2\)</span>，或将其设计为可学习的模块，以适应不同数据集和任务。</p>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+<h2 id="__comments">评论</h2>
+<!-- Comments section - to be configured -->
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Diao Shengjia
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/GoDiao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "header.autohide", "navigation.path", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
