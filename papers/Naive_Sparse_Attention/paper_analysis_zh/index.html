@@ -1,0 +1,801 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Diao Shengjia 的技术博客">
+      
+      
+      
+        <link rel="canonical" href="https://godiao.github.io/papers/Naive_Sparse_Attention/paper_analysis_zh/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>📄 Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention - Diao Shengjia's Blog</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/main.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3109FRSVTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3109FRSVTT');
+</script>
+
+<script
+    src="https://analytics.jiege.pro/api/script.js"
+    data-site-id="1"
+    defer
+></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#-native-sparse-attention-hardware-aligned-and-natively-trainable-sparse-attention" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-header__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Diao Shengjia's Blog
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              📄 Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black"  aria-label="切换至深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="grey"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../blog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  博客
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../" class="md-tabs__link">
+        
+  
+  
+    
+  
+  论文笔记
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  关于
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  项目
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  工具
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-nav__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Diao Shengjia's Blog
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    博客
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    论文笔记
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    关于
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="-native-sparse-attention-hardware-aligned-and-natively-trainable-sparse-attention">📄 Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention<a class="headerlink" href="#-native-sparse-attention-hardware-aligned-and-natively-trainable-sparse-attention" title="Permanent link">&para;</a></h1>
+<h1 id="natively-sparse-attention-nsa弥合理论效率与硬件效率鸿沟的分析报告">Natively Sparse Attention (NSA)：弥合理论效率与硬件效率鸿沟的分析报告<a class="headerlink" href="#natively-sparse-attention-nsa弥合理论效率与硬件效率鸿沟的分析报告" title="Permanent link">&para;</a></h1>
+<h2 id="概要tldr">概要（TL;DR）<a class="headerlink" href="#概要tldr" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>核心问题</strong>：论文旨在解决高效长上下文建模中，稀疏注意力机制<strong>理论计算节省</strong>（FLOPs降低）与<strong>实际硬件加速效果</strong>（延迟降低）及<strong>端到端可训练性</strong>严重脱节的痛点。</li>
+<li><strong>创新方法</strong>：提出<strong>原生可训练分层稀疏注意力（NSA）</strong>，其并非事后“嫁接”的加速插件，而是将稀疏性作为底层设计原则，通过<strong>压缩、选择、滑动窗口</strong>三阶段实现硬件友好的线性复杂度计算。</li>
+<li><strong>关键结果</strong>：<ul>
+<li><strong>性能</strong>：在多个长上下文基准（如LongBench）上，NSA在相同稀疏度下<strong>超越了全注意力基线及其他推理期稀疏方法</strong>，并在部分推理任务上表现更优。</li>
+<li><strong>效率</strong>：针对64K长序列，NSA实现了高达<strong>11.6倍的理论加速比</strong>，并通过专用内核设计在解码和前/反向传播阶段均获得显著实际加速。</li>
+</ul>
+</li>
+<li><strong>主要争议</strong>：实验部分在<strong>统计显著性检验、基线对比完整性</strong>（尤其在推理任务上）以及<strong>关键复现细节</strong>（如代码、数据、训练超参）的披露上存在不足，影响了其结论的坚实度和工作的可复现性。</li>
+</ul>
+<h2 id="-研究背景与动机">📚 研究背景与动机<a class="headerlink" href="#-研究背景与动机" title="Permanent link">&para;</a></h2>
+<p>长上下文建模是下一代大语言模型的关键能力，支撑着从深度推理到多轮智能体等复杂应用。然而，标准Transformer中的全注意力（Full Attention）机制因其与序列长度的二次方复杂度（O(n²)），成为处理长序列时的核心瓶颈。</p>
+<p>为解决此问题，一个自然的思路是利用注意力得分的<strong>内在稀疏性</strong>，即并非所有查询-键交互都同等重要。大量研究探索了通过选择性计算关键交互来减少开销的“稀疏注意力”方法。然而，论文揭示了一个深层的核心矛盾：尽管这些方法报告了可观的理论计算节省，但这些节省<strong>往往无法转化为实际部署中显著的端到端速度提升</strong>，尤其在训练阶段几乎未被有效利用。</p>
+<p>因此，本文的深层动机在于弥合“理论效率”与“实际硬件效率及可训练性”之间的鸿沟。论文批判了现有主流方法的三大局限：
+1.  <strong>“推理后嫁接”的架构偏差</strong>：多数方法是在预训练好的全注意力模型上，于推理阶段附加稀疏化策略，导致稀疏模式可能非最优且无法通过训练优化。
+2.  <strong>硬件不友好的“纸面加速”</strong>：算法设计未充分考虑GPU等硬件特性，不规则的内存访问和额外调度开销使得理论FLOPs减少无法兑现为实际延迟降低。
+3.  <strong>训练支持的缺失</strong>：缺乏高效稳定的训练时稀疏注意力算子，导致“稀疏性”仅是一个推理技巧，而非模型可学习的内在能力。</p>
+<p>基于此，论文提出了 <strong>“原生稀疏性（Native Sparsity）”</strong> 的核心见解，旨在构建一个从算法到硬件协同设计、并从训练阶段就原生支持稀疏性的注意力架构。</p>
+<h2 id="-方法详解">🔬 方法详解<a class="headerlink" href="#-方法详解" title="Permanent link">&para;</a></h2>
+<p>为应对上述挑战，论文提出了 <strong>分层稀疏注意力（NSA）</strong> 。其核心思想是通过一个层次化、硬件友好的流程，动态选择关键Token进行注意力计算，从而实现从训练到推理的全流程高效。</p>
+<p><img alt="Figure 2" src="../images/Figure_2.jpg" /></p>
+<p><em>NSA整体架构概览，展示其由压缩、选择、滑动窗口三个并行注意力分支组成的处理流程。</em></p>
+<p>NSA的完整流程包含三个协同的算法组件，其数据处理流与变量依赖关系如下图所示：</p>
+<pre class="mermaid"><code>flowchart TD
+    A["输入序列 X&lt;br&gt;(T×d)"] --&gt; B[“阶段一：Token压缩&lt;br&gt;（平均池化，比率 r）”]
+    B --&gt; C[“压缩序列 Xc&lt;br&gt;(C×d, C=T/r)”]
+    A --&gt; D[“阶段二：Token选择&lt;br&gt;（核匹配评分 S(xt)）”]
+    C --&gt; D
+    D --&gt; E[“Top-k 关键Token&lt;br&gt;X_topk (k×d)”]
+    C --&gt; F[“阶段三：序列合并&lt;br&gt;Z = Concat(Xc， X_topk)”]
+    E --&gt; F
+    F --&gt; G[“最终序列 Z&lt;br&gt;(L×d, L=C+k)”]
+    G --&gt; H[“滑动窗口注意力&lt;br&gt;（窗口半径 w， 线性复杂度）”]</code></pre>
+<h4 id="1-token压缩降低计算基线">1. Token压缩：降低计算基线<a class="headerlink" href="#1-token压缩降低计算基线" title="Permanent link">&para;</a></h4>
+<p>首先，NSA对输入序列 <span class="arithmatex">\(\mathbf{X} \in \mathbb{R}^{T \times d}\)</span> 进行不重叠的平均池化，将序列长度从 <span class="arithmatex">\(T\)</span> 压缩至 <span class="arithmatex">\(C = \lfloor T/r \rfloor\)</span>，得到压缩表示 <span class="arithmatex">\(\mathbf{X}^c\)</span>。这类似于图像处理中的下采样，旨在聚合局部信息，形成代表整个序列“概要”的超级Token，为后续步骤建立一个更短的计算基线。</p>
+<h4 id="2-token选择动态找回关键细节">2. Token选择：动态找回关键细节<a class="headerlink" href="#2-token选择动态找回关键细节" title="Permanent link">&para;</a></h4>
+<p>为避免池化操作平滑掉重要细节，NSA设计了一个轻量化的<strong>核匹配评分机制</strong>，用于从原始序列中动态筛选关键Token。对于每个原始Token <span class="arithmatex">\(\mathbf{x}_t\)</span>，其重要性分数 <span class="arithmatex">\(S(\mathbf{x}_t)\)</span> 通过计算其与所有压缩Token <span class="arithmatex">\(\mathbf{x}^c_c\)</span> 的余弦相似度并取最大值得到：
+$$
+S(\mathbf{x}<em>t) = \max</em>{c} \left( \frac{\mathbf{x}_t \cdot \mathbf{x}^c_c}{|\mathbf{x}_t| |\mathbf{x}^c_c|} \right)
+$$
+该分数衡量了原始Token与序列“最佳代表点”的相似度。随后，选择分数最高的 <span class="arithmatex">\(k\)</span> 个Token（记为 <span class="arithmatex">\(\mathbf{X}^{\text{top-k}}\)</span>）作为需要保留的精细信息。</p>
+<h4 id="3-滑动窗口注意力高效的局部交互">3. 滑动窗口注意力：高效的局部交互<a class="headerlink" href="#3-滑动窗口注意力高效的局部交互" title="Permanent link">&para;</a></h4>
+<p>最后，将压缩序列 <span class="arithmatex">\(\mathbf{X}^c\)</span> 与选出的关键序列 <span class="arithmatex">\(\mathbf{X}^{\text{top-k}}\)</span> 合并，构成最终的注意力输入序列 <span class="arithmatex">\(\mathbf{Z} \in \mathbb{R}^{L \times d}\)</span>（<span class="arithmatex">\(L = C + k\)</span>）。在 <span class="arithmatex">\(\mathbf{Z}\)</span> 上，NSA应用<strong>滑动窗口注意力</strong>：每个Token仅与其前后 <span class="arithmatex">\(w\)</span> 个邻居Token进行注意力计算。其输出 <span class="arithmatex">\(\mathbf{o}_i\)</span> 计算如下：
+$$
+\mathbf{o}<em>i = \sum</em>{j \in \mathcal{N}(i)} \frac{\exp(\mathbf{q}<em>i \cdot \mathbf{k}_j / \sqrt{d})}{\sum</em>{j‘ \in \mathcal{N}(i)} \exp(\mathbf{q}<em>i \cdot \mathbf{k}</em>{j’} / \sqrt{d})} \mathbf{v}_j, \quad \mathcal{N}(i) = {j \mid |i-j| \le w}
+$$
+由于窗口大小 <span class="arithmatex">\(w\)</span> 是常数，该步骤的复杂度为 <span class="arithmatex">\(O(Ld)\)</span>，即<strong>线性于序列长度</strong>。</p>
+<h4 id="-硬件协同的核函数设计">🏗️ 硬件协同的核函数设计<a class="headerlink" href="#-硬件协同的核函数设计" title="Permanent link">&para;</a></h4>
+<p>为实现理论效率到实际速度的转化，NSA专门设计了高性能计算内核。其核心优化在于<strong>提高算术强度</strong>（每次内存访问执行的浮点运算数）。
+- <strong>传统方式</strong>：需要多次读写全局内存来计算和保存中间注意力矩阵。
+- <strong>NSA优化内核</strong>：采用融合内核技术，将查询向量一次加载至快速共享内存（SRAM），然后在滑动窗口内批量处理键值对，在寄存器中完成注意力权重的计算与加权求和，极大减少了耗时的全局内存访问。</p>
+<p><img alt="Figure 3" src="../images/Figure_3.jpg" /></p>
+<p><em>NSA内核设计示意图，展示其如何通过Grid Loop和Inner Loop在SRAM上高效组织计算，减少对HBM的访问。</em></p>
+<h2 id="-实验验证">📊 实验验证<a class="headerlink" href="#-实验验证" title="Permanent link">&para;</a></h2>
+<p>论文在通用能力、长上下文理解及数学推理等多个维度上对NSA进行了评估，并将其与全注意力（Full Attention）及主流推理期稀疏化方法（如H2O, InfLLM）进行对比。</p>
+<h3 id="性能表现分析">性能表现分析<a class="headerlink" href="#性能表现分析" title="Permanent link">&para;</a></h3>
+<p><strong>在通用基准（如MMLU, GSM8K）上</strong>，NSA与全注意力模型表现相当，平均性能略有提升（+0.013），但在代码生成任务（MBPP）上出现下降。这初步表明原生稀疏设计未对模型通用能力造成显著损害。</p>
+<p><strong>在长上下文任务（LongBench）上</strong>，NSA展现出更明确的优势。在控制稀疏度相同的条件下，NSA的平均得分超越了包括全注意力在内的所有基线。</p>
+<p><img alt="Figure 1（左）" src="../images/Figure_1.jpg" /></p>
+<p><em>综合展示NSA在通用基准、长上下文任务和推理评估中相对全注意力的平均性能对比。</em></p>
+<p><strong>在链式思维推理（AIME）上</strong>，经过指令微调的NSA模型性能显著优于同条件下的全注意力模型。然而，<strong>实验审计指出一个关键缺陷</strong>：此处缺少与其他同样可用于推理的稀疏注意力基线的直接对比，因此NSA“原生可训练”特性在该任务上的独特价值论证尚不充分。</p>
+<h3 id="效率收益验证">效率收益验证<a class="headerlink" href="#效率收益验证" title="Permanent link">&para;</a></h3>
+<p>效率是NSA的核心主张。论文分析显示，随着序列长度增长，NSA所需计算和访问的Token数远低于全注意力，在64K长度下实现了约91.4%的稀疏度，理论加速比达11.6倍。</p>
+<p>更重要的是，通过专用的Triton内核实现，NSA在实际硬件上获得了显著的端到端速度提升。</p>
+<p><img alt="Figure 6" src="../images/Figure_6.jpg" /></p>
+<p><em>NSA的Triton内核与FlashAttention-2内核的延迟对比，显示NSA在所有序列长度上延迟更低，且优势随长度增加而扩大。</em></p>
+<p><img alt="Figure 1（右）" src="../images/Figure_1.jpg" /></p>
+<p><em>展示在处理64K序列时，NSA在解码、前向传播和反向传播三个阶段均获得大幅计算加速。</em></p>
+<h3 id="消融研究与动机可视化">消融研究与动机可视化<a class="headerlink" href="#消融研究与动机可视化" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>消融实验</strong>：对比了NSA与其它Token选择策略（如基于辅助损失、启发式方法）的训练损失曲线，验证了其设计的有效性。</li>
+</ul>
+<p><img alt="Figure 7" src="../images/Figure_7.jpg" /></p>
+<p><em>不同Token选择策略的训练损失对比，显示NSA策略收敛效果更佳。</em></p>
+<ul>
+<li><strong>设计动机</strong>：通过可视化全注意力模型的注意力图，揭示了注意力分数呈“块状聚类”分布的现象，为NSA采用分块压缩与选择的策略提供了直观依据。</li>
+</ul>
+<p><img alt="Figure 8" src="../images/Figure_8.jpg" /></p>
+<p><em>全注意力模型注意力图的可视化，图中亮色区域显示注意力确实存在块状聚类分布。</em></p>
+<h3 id="-实验局限与复现风险审计员观点">⚠️ 实验局限与复现风险（审计员观点）<a class="headerlink" href="#-实验局限与复现风险审计员观点" title="Permanent link">&para;</a></h3>
+<p>尽管结果积极，但独立审计揭示了以下几个关键问题：
+1.  <strong>统计严谨性不足</strong>：所有性能表格均未报告方差或置信区间，无法判断改进的统计显著性。
+2.  <strong>基线对比不完整</strong>：在推理任务（AIME）和部分长上下文对比中，缺失与主流稀疏方法（如InfLLM， Quest）的直接比较，削弱了论证力度。
+3.  <strong>复现信息严重缺失</strong>：<strong>论文未提供代码、模型权重或详细预训练数据配方</strong>，且缺少批量大小、学习率等关键训练超参数，复现风险极高。
+4.  <strong>效率数据有待补充</strong>：虽有关键核加速数据，但缺乏端到端训练迭代时间或系统级吞吐量的全面对比。</p>
+<h2 id="-核心要点">💡 核心要点<a class="headerlink" href="#-核心要点" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>真问题，新思路</strong>：NSA精准命中了当前稀疏注意力研究“重理论、轻实践”的痛点，开创性地提出“原生稀疏性”设计原则，旨在弥合理论效率与硬件效率的鸿沟。</li>
+<li><strong>算法与硬件协同设计</strong>：其分层（压缩-选择-滑动窗口）方法不仅在算法上实现了线性复杂度，更通过精心设计的核函数与GPU内存层次结构对齐，将理论FLOPs节省切实转化为延迟降低。</li>
+<li><strong>全流程优势初显</strong>：实验表明，一个为稀疏而生的架构能够在不损害（甚至略微提升）模型能力的前提下，实现从训练到推理的全程加速，证明了“原生可训练稀疏注意力”的可行性。</li>
+<li><strong>论证与开放度有待加强</strong>：工作的影响力目前受到实验论证严谨性不足和缺乏开源资源的限制。其宣称的优势需要更透明、更完整的评估来充分支撑。</li>
+</ol>
+<h2 id="-未来方向与局限性">🔮 未来方向与局限性<a class="headerlink" href="#-未来方向与局限性" title="Permanent link">&para;</a></h2>
+<p>基于当前分析，NSA的未来发展与改进可能围绕以下几点：
+- <strong>加强实验论证</strong>：未来工作需补充统计显著性检验，并在所有任务上进行更全面的基线对比，尤其是与那些在推理阶段可应用于微调后模型的稀疏方法。
+- <strong>提升开源性与可复现性</strong>：公开模型代码、权重及详尽的数据处理与训练脚本，是让社区接受并推进该项研究的关键一步。
+- <strong>探索更优稀疏模式</strong>：当前基于池化和固定窗口的稀疏模式是有效的，但未必最优。可探索学习动态的、内容感知的稀疏连接模式。
+- <strong>扩展到更复杂场景</strong>：验证NSA在极长序列（&gt;100万Token）、多模态长上下文等更复杂场景下的有效性与效率。</p>
+<p><strong>局限性</strong>：NSA的性能增益在部分任务上尚不显著或一致；其设计依赖于序列的局部性和可压缩性假设，在处理极度非局部依赖的任务时可能面临挑战；此外，复杂的多阶段流程可能引入额外的实现与调试成本。</p>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+<h2 id="__comments">评论</h2>
+<!-- Comments section - to be configured -->
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Diao Shengjia
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/GoDiao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "header.autohide", "navigation.path", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
