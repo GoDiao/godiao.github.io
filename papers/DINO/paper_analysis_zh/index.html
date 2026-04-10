@@ -1,0 +1,752 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Diao Shengjia 的技术博客">
+      
+      
+      
+        <link rel="canonical" href="https://godiao.github.io/papers/DINO/paper_analysis_zh/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>📄 gs, gt: student and teacher networks - Diao Shengjia's Blog</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/main.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3109FRSVTT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3109FRSVTT');
+</script>
+
+<script
+    src="https://analytics.jiege.pro/api/script.js"
+    data-site-id="1"
+    defer
+></script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#-gs-gt-student-and-teacher-networks" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-header__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Diao Shengjia's Blog
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              📄 gs, gt: student and teacher networks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="black"  aria-label="切换至深色模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至深色模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="grey"  aria-label="切换至亮色模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至亮色模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  首页
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../blog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  博客
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../about/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  关于
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../projects/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  项目
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../tools/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  工具
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Diao Shengjia&#39;s Blog" class="md-nav__button md-logo" aria-label="Diao Shengjia's Blog" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Diao Shengjia's Blog
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/GoDiao/blog-source" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../blog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    博客
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../about/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    关于
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    工具
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="-gs-gt-student-and-teacher-networks">📄 gs, gt: student and teacher networks<a class="headerlink" href="#-gs-gt-student-and-teacher-networks" title="Permanent link">&para;</a></h1>
+<h1 id="dino无监督知识蒸馏解锁视觉transformer潜力分析">DINO：无监督知识蒸馏解锁视觉Transformer潜力分析<a class="headerlink" href="#dino无监督知识蒸馏解锁视觉transformer潜力分析" title="Permanent link">&para;</a></h1>
+<h2 id="概要tldr">概要（TL;DR）<a class="headerlink" href="#概要tldr" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>核心问题</strong>：视觉Transformer（ViT）在监督训练下未能展现超越卷积网络的独特优势，面临“合理性危机”。</li>
+<li><strong>关键洞察</strong>：将自监督学习重新定义为<strong>无标签的知识蒸馏</strong>，提出DINO框架，通过动量教师、多裁剪和中心化/锐化操作避免模型坍缩。</li>
+<li><strong>惊人发现</strong>：DINO训练出的ViT，其自注意力机制能够<strong>在无任何像素级标注的情况下，自发地学习分割图像中的物体</strong>。</li>
+<li><strong>卓越性能</strong>：在多项任务（如图像分类、检索、分割）上达到或超越前沿水平，且ViT-B/8模型以<strong>仅1/10的参数</strong>和<strong>更快的速度</strong>，实现了与巨型卷积网络相当的精度。</li>
+<li><strong>重要意义</strong>：首次清晰地证明了自监督学习能够释放ViT的架构潜力，为其在计算机视觉领域的应用提供了强有力的理由。</li>
+</ul>
+<h2 id="-研究背景与动机">📚 研究背景与动机<a class="headerlink" href="#-研究背景与动机" title="Permanent link">&para;</a></h2>
+<p>卷积神经网络（CNN）统治计算机视觉领域近十年。视觉Transformer的出现曾带来巨大冲击，其基于自注意力的架构灵感源于自然语言处理的成功。然而，ViT初期的表现不尽如人意：计算成本高、数据需求量大，并且最关键的是，相比成熟的CNN并未展现出明确且独特的优势。</p>
+<p>与此同时，自监督学习在计算机视觉领域蓬勃发展。其核心思想是让模型通过解决前置任务（如预测图像旋转、对比不同视图）来学习强大的、可迁移的特征表示，而无需人工标注。在NLP领域，正是自监督学习（如BERT的掩码语言建模）成就了Transformer的统治地位。这引出了一个关键问题：<strong>将自监督学习与ViT结合，能否解锁其潜在能力，并揭示监督训练无法获得的独特视觉特性？</strong></p>
+<p>论文表面探讨的是ViT的“初期表现平淡”，但其深层次意图是解决ViT在视觉领域的 <strong>“合理性危机”</strong> 。它是一个昂贵而复杂的方案，却缺乏令人信服的优势。作者假设，这种优势的缺失源于<strong>监督预训练范式本身</strong>。具体而言，图像级别的监督标签（如“狗”）是一种<strong>简化且信息贫乏的学习信号</strong>，无法充分捕获图像中丰富的结构信息（如物体部件、边界、场景布局）。本文旨在证明，当ViT通过自监督学习摆脱这种弱信号的束缚后，能够学到与监督训练<strong>本质不同且更有用的特征表示</strong>，从而证明其架构复杂性的价值。</p>
+<p>此前工作的局限性体现在三方面：
+1.  <strong>监督ViT</strong>：基本在复现CNN的功能，且效率更低，其特征并未展现出新颖的理想特性。
+2.  <strong>面向CNN的自监督方法</strong>：虽强大，但通常依赖复杂的工程技巧（如大批次、内存库、预测头），其设计和评估围绕CNN展开，未必是激发ViT潜力的最优解。
+3.  <strong>自监督中的知识蒸馏</strong>：以往工作仅将蒸馏用作模型压缩的后处理步骤，错失了将蒸馏<strong>框架本身</strong>作为动态自监督目标核心的机会。</p>
+<h2 id="-方法详解">🔬 方法详解<a class="headerlink" href="#-方法详解" title="Permanent link">&para;</a></h2>
+<p>DINO的核心是将表示学习<strong>重构为一个无标签的知识蒸馏问题</strong>。其基本设定是：训练一个学生网络，使其输出分布与一个教师网络的输出分布相匹配。而教师网络是学生网络的动量更新版本。为防止输出坍缩（如全部输出相同或均匀分布），DINO引入了<strong>中心化</strong>和<strong>锐化</strong>操作。</p>
+<p><img alt="Figure_1" src="images/Figure_1.png" /></p>
+<p><em>DINO训练出的ViT-S/8模型的[CLS]令牌自注意力图，展示了无监督下的类特定对象分割能力。</em></p>
+<p><strong>核心机制：</strong>
+1.  <strong>网络结构与输出</strong>：学生和教师网络共享架构（ViT或ResNet），后接一个投影头（小MLP），输出一个K维向量（K为原型数量，如65，536）。通过温度系数τ控制的Softmax，将输出转换为概率分布：
+    <strong>学生分布</strong>：$<span class="arithmatex">\(P_s(x)^{(i)} = \frac{\exp\left(g_{\theta_s}(x)^{(i)} / \tau_s\right)}{\sum_{k=1}^K \exp\left(g_{\theta_s}(x)^{(k)} / \tau_s\right)}\)</span>$
+    <strong>教师分布</strong>（含中心化与锐化）：$<span class="arithmatex">\(P_t(x)^{(i)} = \frac{\exp\left(\left(g_{\theta_t}(x)^{(i)} - c\right) / \tau_t\right)}{\sum_{k=1}^K \exp\left(\left(g_{\theta_t}(x)^{(k)} - c\right) / \tau_t\right)}\)</span>$
+    其中，<span class="arithmatex">\(c\)</span>是一个动态更新的中心向量（运行平均值），用于防止某个原型独大；<span class="arithmatex">\(\tau_t &lt; \tau_s\)</span> 使教师分布更“尖锐”，为学生提供明确的学习目标。</p>
+<ol>
+<li>
+<p><strong>动量更新</strong>：教师参数<span class="arithmatex">\(\theta_t\)</span>通过指数移动平均（EMA）随学生参数<span class="arithmatex">\(\theta_s\)</span>缓慢更新：$<span class="arithmatex">\(\theta_t \leftarrow \lambda \theta_t + (1 - \lambda) \theta_s\)</span>$。这为训练提供了稳定目标。</p>
+</li>
+<li>
+<p><strong>损失函数与多裁剪</strong>：损失是教师视图（仅全局裁剪）与学生视图（全局+多个局部裁剪）之间的交叉熵损失之和：
+    $<span class="arithmatex">\(\mathcal{L} = \sum_{x \in \mathcal{V}_s} \sum_{x' \in \mathcal{V}_t} H\left(P_t(x'), P_s(x)\right)\)</span>$
+    多裁剪策略强制模型学习从局部到全局的视图不变性，是性能提升的关键。</p>
+</li>
+<li>
+<p><strong>避免坍缩的分析</strong>：交叉熵损失可分解为教师分布熵<span class="arithmatex">\(h(P_t)\)</span>和师生分布的KL散度<span class="arithmatex">\(D_{\text{KL}}(P_t \| P_s)\)</span>。中心化防止熵过低（单一原型主导），锐化防止熵过高（均匀分布），两者共同维持一个信息丰富的学习过程。</p>
+</li>
+</ol>
+<p><strong>为何ViT与DINO协同效应显著？</strong>
+DINO框架与ViT的架构特性产生了奇妙的化学反应。通过匹配不同裁剪视图的输出，DINO的训练目标鼓励ViT的自注意力机制去捕获图像中跨视图一致的语义结构。这导致了一个<strong>涌现特性</strong>：ViT的[CLS]令牌在最后一层的自注意力图，会高度聚焦于图像中的主要物体边界，实现了无监督语义分割。</p>
+<p><img alt="Figure_3" src="images/Figure_3.png" /></p>
+<p><em>ViT-S/8最后一个层中不同注意力头（以不同颜色表示）的[CLS]令牌注意力图，显示不同头专注于不同物体或部件。</em></p>
+<h2 id="-实验验证">📊 实验验证<a class="headerlink" href="#-实验验证" title="Permanent link">&para;</a></h2>
+<p>实验在ImageNet等多个数据集上进行，评估涵盖分类（线性探测、k-NN）、图像检索、复制检测、视频分割和迁移学习。</p>
+<p><strong>主要结果：</strong>
+1.  <strong>ImageNet分类（ViT-S）</strong>：DINO显著优于其他自监督方法。在线性评估和k-NN评估上分别达到<strong>77.0%</strong> 和<strong>74.5%</strong> 的Top-1准确率，较BYOL、MoCov2、SwAV等基线高出3.5-5.6%（线性）和7.9-10.1%（k-NN）。k-NN性能接近线性分类器，表明其特征质量极高。</p>
+<p><img alt="Table_7" src="images/Table_7.png" /></p>
+<p><em>消融研究表，展示了动量编码器、多裁剪、交叉熵损失等组件的重要性。</em></p>
+<ol>
+<li>
+<p><strong>跨架构效率突破</strong>：DINO训练出的<strong>ViT-B/8</strong>模型仅用<strong>8500万参数</strong>，在线性评估上达到<strong>80.1%</strong> 的SOTA水平，同时吞吐量为63 im/s。相比之下，此前基于卷积网络的SOTA方法SCLRv2（RN152w3+SK）需要7.94亿参数，吞吐量46 im/s，精度为79.8%。DINO实现了<strong>约10倍的参数压缩和1.4倍的速度提升</strong>。</p>
+</li>
+<li>
+<p><strong>下游任务优势</strong>：</p>
+<ul>
+<li><strong>图像检索与复制检测</strong>：在Google Landmarks等数据集上，DINO ViT模型超越了专门为检索设计的监督模型。</li>
+<li><strong>无监督分割</strong>：在PASCAL VOC上，DINO ViT自注意力图与真实掩码的Jaccard相似度远超监督训练的ViT。</li>
+</ul>
+</li>
+</ol>
+<p><img alt="Figure_4" src="images/Figure_4.png" /></p>
+<p><em>监督ViT与DINO ViT的自注意力分割掩码对比，以及它们在PASCAL VOC上的Jaccard相似度定量比较。</em></p>
+<ol>
+<li><strong>消融研究与分析</strong>：<ul>
+<li><strong>关键组件</strong>：动量编码器、多裁剪策略和交叉熵损失对性能至关重要。移除多裁剪会导致线性准确率下降4.2%。</li>
+<li><strong>训练效率</strong>：多裁剪提供了更好的精度-时间权衡，能以更短时间达到更高精度。</li>
+<li><strong>注意力特性</strong>：如<strong>Figure_1</strong>和<strong>Figure_3</strong>所示，DINO训练出的ViT注意力头具有高度语义性，能够分离不同物体或物体部件。</li>
+</ul>
+</li>
+</ol>
+<p><img alt="Figure_5" src="images/Figure_5.png" /></p>
+<p><em>不同组件（损失函数、多裁剪等）消融实验的示意图或结果摘要。</em></p>
+<p><img alt="Figure_7" src="images/Figure_7.png" /></p>
+<p><em>训练过程中教师目标熵和KL散度的演变，展示了DINO如何避免模型坍缩。</em></p>
+<p><strong>潜在局限性与注意事项</strong>（基于数据审计）：
+1.  <strong>统计报告不足</strong>：论文未提供多次运行结果的标准差，难以精确评估改进的统计显著性。
+2.  <strong>比较公平性</strong>：部分跨架构比较的训练周期（300 vs 800 epoch）不完全对等；ViT固有的注意力机制可能在某些任务（如分割）上自带优势。
+3.  <strong>计算需求</strong>：训练ViT-B/8需3天（16块V100 GPU），计算成本依然较高。
+4.  <strong>超参数敏感性</strong>：中心化和锐化操作需要精细调参以维持训练稳定性。</p>
+<h2 id="-核心要点">💡 核心要点<a class="headerlink" href="#-核心要点" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>范式验证</strong>：本工作成功验证了核心假设——<strong>自监督学习是释放视觉Transformer潜力的关键</strong>。监督训练的“贫乏信号”掩盖了ViT的架构优势。</li>
+<li><strong>框架创新</strong>：提出了<strong>DINO</strong>，一个简洁而强大的自监督学习框架。它将任务重构为无标签知识蒸馏，摒弃了许多复杂组件，显示了出色的通用性和有效性。</li>
+<li><strong>涌现特性</strong>：DINO与ViT结合催生了前所未有的特性——<strong>无需任何像素监督的自发语义分割能力</strong>。这表明模型学习到了深层的场景结构理解。</li>
+<li><strong>效率与性能的平衡</strong>：DINO训练出的ViT模型，在参数效率和推理速度上显著优于庞大的自监督卷积网络，同时在分类、检索等多个基准上达到领先水平，为ViT的实际部署提供了有力论据。</li>
+<li><strong>基础性贡献</strong>：这项工作不仅是一个强大的自监督方法，更从根本上为Vision Transformer在计算机视觉领域的地位正名，指明了其独特优势所在。</li>
+</ol>
+<h2 id="-未来方向与局限性">🔮 未来方向与局限性<a class="headerlink" href="#-未来方向与局限性" title="Permanent link">&para;</a></h2>
+<p><strong>未来方向</strong>：
+*   <strong>理论深化</strong>：进一步从理论上解释为何DINO框架能引导ViT注意力产生语义分割图。
+*   <strong>架构探索</strong>：将DINO框架与更先进的ViT变体（如Swin Transformer）结合，探索其边界。
+*   <strong>多模态扩展</strong>：借鉴DINO的思想，探索视觉-语言统一模型的自监督预训练。
+*   <strong>轻量化</strong>：进一步降低训练和部署的计算成本。</p>
+<p><strong>局限性</strong>：
+*   如实验部分所述，结果的统计稳健性有待进一步量化报告。
+*   尽管效率已有突破，但训练大规模ViT模型仍需要可观的算力资源。
+*   自注意力分割的质量虽高，但尚未达到实用级分割系统的精度，如何利用这一特性改进下游密集预测任务仍需探索。</p>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+<h2 id="__comments">评论</h2>
+<!-- Comments section - to be configured -->
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2024 Diao Shengjia
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/GoDiao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.instant", "navigation.instant.progress", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "header.autohide", "navigation.path", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
