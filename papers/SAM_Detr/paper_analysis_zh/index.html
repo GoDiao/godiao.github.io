@@ -616,14 +616,14 @@
 </ul>
 <h2 id="-研究背景与动机">📚 研究背景与动机<a class="headerlink" href="#-研究背景与动机" title="Permanent link">&para;</a></h2>
 <p>物体检测是计算机视觉的核心任务。传统基于卷积神经网络（CNN）的检测器（如 Faster R-CNN、YOLO）依赖人工设计的锚框（anchor）和非极大值抑制（NMS），流程复杂。DETR（Detection Transformer）的出现带来了变革，它提供了首个完全端到端的 Transformer 检测框架，消除了这些手动设计。然而，DETR 的广泛应用受到一个关键缺陷的阻碍：<strong>训练收敛极慢</strong>，需要多达 500 个训练周期才能达到 CNN 检测器仅用 12-36 周期即可获得的性能，这大大增加了计算成本。</p>
-<p><img alt="Fig_1" src="images/Fig_1.png" /></p>
+<p><img alt="Fig_1" src="../images/Fig_1.png" /></p>
 <p><em>展示 DETR 解码器中，对象查询与图像特征因经过不同模块处理而投影到语义未对齐的嵌入空间，导致匹配困难。</em></p>
 <p>研究发现，缓慢收敛的表象之下，<strong>根本原因在于解码器中对象查询与图像特征之间的“匹配过程”困难</strong>。交叉注意力本质是一个“匹配与特征蒸馏”过程。然而，在解码器各层之间，对象查询和编码后的图像特征被投影到了<strong>不同且语义未对齐的嵌入空间</strong>。这种错位意味着在初始化时，注意力机制所依赖的点积相似度计算是无效的——每个查询同等地关注所有图像位置。模型因此必须在训练过程中<strong>费力地从零开始学习对齐这些空间</strong>，这正是巨大收敛延迟的主要驱动力。</p>
 <p>现有加速 DETR 的工作大多治标不治本，未能触及这一核心原因：<strong>空间约束方法</strong>（如 Deformable DETR）缩小了搜索范围，但未确保被比较特征的语义可比性；<strong>训练策略改进</strong>（如 DN-DETR）使优化目标更清晰，但未简化基础的相似度计算；<strong>多尺度特征融合</strong>则因不同尺度间固有的语义未对齐问题而受阻。</p>
 <p><strong>本文的关键洞察</strong>来源于孪生网络（Siamese Network）架构。在目标跟踪、重识别等匹配任务中，将两个输入投影到一个<strong>共享的、语义对齐的嵌入空间</strong>是进行高效、准确相似度计算的前提。作者认识到，DETR 的交叉注意力本质上就是一个<strong>基于相似度的匹配任务</strong>。因此，快速收敛的关键不在于设计更复杂的注意力机制，而在于确保在点积操作<em>之前</em>，对象查询和图像特征就位于<strong>相同的语义空间</strong>中。这使得相似度度量从一开始就有意义，为模型提供了强大的先验，引导每个查询立即关注具有相似语义的区域。</p>
 <h2 id="-方法详解">🔬 方法详解<a class="headerlink" href="#-方法详解" title="Permanent link">&para;</a></h2>
 <p>SAM-DETR++ 的核心是引入一个即插即用的 <strong>“语义对齐器”</strong> 模块，置于每个解码器层的交叉注意力操作之前。其核心思想是：<strong>在匹配发生前强制对齐语义</strong>。</p>
-<p><img alt="Fig_2" src="images/Fig_2.png" /></p>
+<p><img alt="Fig_2" src="../images/Fig_2.png" /></p>
 <p><em>(a) SAM-DETR++ 解码器层概览，展示了语义对齐器的插入位置；(b) 语义对齐器模块的详细架构，包括 RoIAlign、关键点预测和特征重加权。</em></p>
 <h3 id="-核心操作从重采样到语义对齐">🔍 核心操作：从重采样到语义对齐<a class="headerlink" href="#-核心操作从重采样到语义对齐" title="Permanent link">&para;</a></h3>
 <p>标准 DETR 的交叉注意力可阐释为匹配与蒸馏：
@@ -644,7 +644,7 @@ $$
     $$
     Q^{new'} = \text{Concat}({F_R[..., x, y, ...] \text{ for } x, y \in R_{SP}}) \quad \text{(Eq. 5)}
     $$</p>
-<p><img alt="Fig_3" src="images/Fig_3.png" /></p>
+<p><img alt="Fig_3" src="../images/Fig_3.png" /></p>
 <p><em>可视化解码过程中，代表性关键点（青色点）如何逐渐落在物体上有意义的位置，注意力热图也随之变得更精确。</em></p>
 <ol>
 <li><strong>特征重加权</strong>：保留原始查询 <span class="arithmatex">\(Q\)</span> 所携带的高层“检测意图”，通过一个由 <span class="arithmatex">\(Q\)</span> 生成的 Sigmoid 门控掩码对采样得到的新特征 <span class="arithmatex">\(Q^{new‘}\)</span> 进行调制，得到最终的对齐查询 <span class="arithmatex">\(Q^{new}\)</span>。
@@ -652,12 +652,12 @@ $$
     Q^{new} = Q^{new'} \otimes \sigma(Q W_{RW1}) \quad \text{(Eq. 7)}
     $$</li>
 </ol>
-<p><img alt="Fig_5" src="images/Fig_5.png" /></p>
+<p><img alt="Fig_5" src="../images/Fig_5.png" /></p>
 <p><em>可视化代表性关键点位置及各注意力头的热图，显示关键点落在物体显著部位（如边界、中心），热图高度聚焦。</em></p>
 <p><strong>物理直觉</strong>：与其让一个抽象的“检测代理”（原始查询 <span class="arithmatex">\(Q\)</span>）在整张图像中艰难地寻找自己，我们先将它“放置”到图像中的一个具体区域（<span class="arithmatex">\(R_{box}\)</span>），并用该区域最具代表性的视觉特征（<span class="arithmatex">\(Q^{new}\)</span>）来重新定义它。当这个新代理再去和图像计算相似度时，它自然会在其来源区域找到最高相似度，因为二者现在由相同的“视觉材料”构成。这绕过了从零学习对齐不同语义空间的难题。</p>
 <h3 id="-扩展到多尺度特征融合">🏗️ 扩展到多尺度特征融合<a class="headerlink" href="#-扩展到多尺度特征融合" title="Permanent link">&para;</a></h3>
 <p>语义对齐机制使得高效的多尺度特征融合成为可能。如 
-<img alt="Fig_4" src="images/Fig_4.png" /></p>
+<img alt="Fig_4" src="../images/Fig_4.png" /></p>
 <p><em>展示 SAM-DETR++ 如何以由粗到精的方式，将不同尺度的特征图输入不同的解码器层。</em>
  所示，不同分辨率的特征图（如来自 FPN）被输入到不同的解码器层。没有语义对齐时，查询需要在每个尺度变化时重新对齐语义，增加复杂性。而有了语义对齐器，无论输入特征尺度如何，对齐在每个层都被强制执行，使得由粗到精的检测过程无缝衔接。</p>
 <h2 id="-实验验证">📊 实验验证<a class="headerlink" href="#-实验验证" title="Permanent link">&para;</a></h2>
@@ -673,7 +673,7 @@ $$
 <p><strong>50周期训练与SOTA</strong>：
 -   <strong>SAM-DETR++-R50</strong> (50周期): 47.5% AP （已具竞争力）
 -   <strong>SAM-DETR++-R50 (集成 SMCA+DN)</strong> (50周期): <strong>49.1% AP</strong> → <strong>在基于 ResNet-50 的 Transformer 检测器中达到新的 SOTA</strong>，超越了 DN-DETR (46.3%)、Deformable DETR (46.2%) 等方法。</p>
-<p><img alt="Fig_6" src="images/Fig_6.png" /></p>
+<p><img alt="Fig_6" src="../images/Fig_6.png" /></p>
 <p><em>DETR、SAM-DETR（单尺度）和 SAM-DETR++（多尺度）的收敛曲线对比，清晰展示后两者在极早期就达到高性能并快速稳定。</em></p>
 <h3 id="-消融研究与分析">🔎 消融研究与分析<a class="headerlink" href="#-消融研究与分析" title="Permanent link">&para;</a></h3>
 <p>消融实验（对应文中的 Table 3 和 Table 4）验证了各组件贡献：
