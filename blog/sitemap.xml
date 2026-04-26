@@ -2,50 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://godiao.github.io/blog/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/blog/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
+    </url>
+    <url>
+         <loc>https://godiao.github.io/blog/blog/object-detection-future/</loc>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/blog/rgb-to-raw-guide/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/DINO/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/GLM5_Report/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/Naive_Sparse_Attention/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/Opus/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/SAM_Detr/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/Stable_DINO/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/VLDet/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
     <url>
          <loc>https://godiao.github.io/blog/papers/revisiting_CLS/paper_analysis_zh/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-04-26</lastmod>
     </url>
 </urlset>
