@@ -144,7 +144,7 @@
 <h1 id="llm-推理架构解析从单机到集群的完整图景">LLM 推理架构解析：从单机到集群的完整图景<a class="headerlink" href="#llm-推理架构解析从单机到集群的完整图景" title="Permanent link">&para;</a></h1>
 <p>大语言模型的推理远不止「把模型加载到 GPU 上跑 forward」那么简单。从单机单卡的离线推理，到支持数千并发请求的在线服务，再到跨数据中心的多模态推理集群——每一步都涉及复杂的系统设计和工程权衡。这篇文章尝试从第一性原理出发，梳理 LLM 推理架构的全貌。</p>
 <hr />
-<h2 id="1-推理的基础为什么是-memory-bound">1. 推理的基础：为什么是 Memory-Bound？<a class="headerlink" href="#1-推理的基础为什么是-memory-bound" title="Permanent link">&para;</a></h2>
+<h2 id="推理的基础为什么是-memory-bound">推理的基础：为什么是 Memory-Bound？<a class="headerlink" href="#推理的基础为什么是-memory-bound" title="Permanent link">&para;</a></h2>
 <p>在进入架构细节之前，先理解一个基本事实：<strong>LLM 推理不是算力问题，而是显存带宽问题</strong>。</p>
 <p>以一个 70B 参数模型为例，FP16 精度的权重占用 140 GB 显存。生成一个 token 时，需要将整份权重从 HBM 加载到计算单元，一次完整的权重读取约为 140 GB。如果 GPU 的显存带宽是 2 TB/s，一次权重读取耗时约 70 ms。而 H100 的峰值算力是 989 TFLOPS——即使只做一次矩阵乘法，算力也远未饱和。</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>预填充阶段（Prefill）：计算密集型
@@ -159,7 +159,7 @@
 </span></code></pre></div>
 <p>这解释了为什么 LLM 推理优化的核心不是「加速计算」，而是「减少权重和 KV Cache 的加载次数」。</p>
 <hr />
-<h2 id="2-推理系统的三层架构">2. 推理系统的三层架构<a class="headerlink" href="#2-推理系统的三层架构" title="Permanent link">&para;</a></h2>
+<h2 id="推理系统的三层架构">推理系统的三层架构<a class="headerlink" href="#推理系统的三层架构" title="Permanent link">&para;</a></h2>
 <p>一个完整的 LLM 推理系统通常分为三层：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌──────────────────────────────────────────────┐
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│              接入层 (Gateway)                │
@@ -172,27 +172,27 @@
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│  模型并行 · KV Cache 管理 · 算子优化         │
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>└──────────────────────────────────────────────┘
 </span></code></pre></div>
-<h3 id="21-接入层流量的入口">2.1 接入层：流量的入口<a class="headerlink" href="#21-接入层流量的入口" title="Permanent link">&para;</a></h3>
+<h3 id="接入层流量的入口">接入层：流量的入口<a class="headerlink" href="#接入层流量的入口" title="Permanent link">&para;</a></h3>
 <p>接入层负责将外部请求分发到推理节点。最简单的场景是 DNS 轮询，但生产环境中通常需要：</p>
 <ul>
 <li><strong>Token-Based 路由</strong>：根据请求的 token 数量分配到不同实例（长请求去大显存实例，短请求去小实例）</li>
 <li><strong>Session Affinity</strong>：同一个对话的多轮请求始终路由到同一个后端，避免 KV Cache 的重复传输</li>
 <li><strong>智能负载均衡</strong>：实时监测各实例的显存使用率、队列深度，动态调整路由</li>
 </ul>
-<h3 id="22-调度层效率的关键">2.2 调度层：效率的关键<a class="headerlink" href="#22-调度层效率的关键" title="Permanent link">&para;</a></h3>
+<h3 id="调度层效率的关键">调度层：效率的关键<a class="headerlink" href="#调度层效率的关键" title="Permanent link">&para;</a></h3>
 <p>调度层决定了请求的排队、批处理和资源分配策略。这是整个系统中最具工程挑战的部分。</p>
-<h3 id="23-计算层硬件的极限">2.3 计算层：硬件的极限<a class="headerlink" href="#23-计算层硬件的极限" title="Permanent link">&para;</a></h3>
+<h3 id="计算层硬件的极限">计算层：硬件的极限<a class="headerlink" href="#计算层硬件的极限" title="Permanent link">&para;</a></h3>
 <p>计算层负责实际的模型前向传播，包括张量并行、KV Cache 分页管理、算子融合等底层优化。</p>
 <hr />
-<h2 id="3-调度层核心连续批处理continuous-batching">3. 调度层核心：连续批处理（Continuous Batching）<a class="headerlink" href="#3-调度层核心连续批处理continuous-batching" title="Permanent link">&para;</a></h2>
-<h3 id="31-为什么传统批处理不适用">3.1 为什么传统批处理不适用<a class="headerlink" href="#31-为什么传统批处理不适用" title="Permanent link">&para;</a></h3>
+<h2 id="调度层核心连续批处理continuous-batching">调度层核心：连续批处理（Continuous Batching）<a class="headerlink" href="#调度层核心连续批处理continuous-batching" title="Permanent link">&para;</a></h2>
+<h3 id="为什么传统批处理不适用">为什么传统批处理不适用<a class="headerlink" href="#为什么传统批处理不适用" title="Permanent link">&para;</a></h3>
 <p>在图像分类等传统任务中，批处理很简单——把 32 张图拼成一个大张量，一次 forward 出 32 个结果。但 LLM 推理有两个根本差异：</p>
 <ol>
 <li><strong>序列长度不固定</strong>：32 个请求的 prompt 长度从 10 token 到 10K token 不等</li>
 <li><strong>自回归生成</strong>：每个请求每次只产生 1 个 token，然后才能决定下一个 token 是什么——不同请求可能提前结束（如模型输出了 <code>&lt;|endoftext|&gt;</code>）</li>
 </ol>
 <p>如果等所有请求都结束才释放 batch，短的请求会被长的请求拖累（"tail latency" 问题）。</p>
-<h3 id="32-连续批处理原理">3.2 连续批处理原理<a class="headerlink" href="#32-连续批处理原理" title="Permanent link">&para;</a></h3>
+<h3 id="连续批处理原理">连续批处理原理<a class="headerlink" href="#连续批处理原理" title="Permanent link">&para;</a></h3>
 <p>Orca（Yu et al., 2022）提出了连续批处理（Iteration-Level Batching）——每个 iteration（即生成一个 token 的周期）都重新调度：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Iteration 0:  Batch [R1, R2, R3, R4]  → 各自生成第 1 个 token
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Iteration 1:  Batch [R1, R2, R3, R4]  → R2 结束（生成 EOS）
@@ -200,7 +200,7 @@
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Iteration 3:  Batch [R1, R3, R4, R5, R6] → R6 加入
 </span></code></pre></div>
 <p>关键设计：<strong>每个 iteration 结束都检查是否有请求完成或新请求到达，动态重组 batch</strong>。这避免了传统批处理的 tail latency 问题。</p>
-<h3 id="33-调度策略的权衡">3.3 调度策略的权衡<a class="headerlink" href="#33-调度策略的权衡" title="Permanent link">&para;</a></h3>
+<h3 id="调度策略的权衡">调度策略的权衡<a class="headerlink" href="#调度策略的权衡" title="Permanent link">&para;</a></h3>
 <p>连续批处理中，调度器需要决定「哪些请求进入下一个 batch」。常见策略：</p>
 <table>
 <thead>
@@ -235,8 +235,8 @@
 </table>
 <p><strong>vLLM 采用 FCFS + 动态抢占</strong>：新到达的长 prompt 请求可以抢占正在 decode 的请求（将其 KV Cache 换出到 CPU），保证 GPU 不会闲置。</p>
 <hr />
-<h2 id="4-请求分块chunked-prefill">4. 请求分块：Chunked Prefill<a class="headerlink" href="#4-请求分块chunked-prefill" title="Permanent link">&para;</a></h2>
-<h3 id="41-prefill-和-decode-的矛盾">4.1 Prefill 和 Decode 的矛盾<a class="headerlink" href="#41-prefill-和-decode-的矛盾" title="Permanent link">&para;</a></h3>
+<h2 id="请求分块chunked-prefill">请求分块：Chunked Prefill<a class="headerlink" href="#请求分块chunked-prefill" title="Permanent link">&para;</a></h2>
+<h3 id="prefill-和-decode-的矛盾">Prefill 和 Decode 的矛盾<a class="headerlink" href="#prefill-和-decode-的矛盾" title="Permanent link">&para;</a></h3>
 <p>Prefill（处理 prompt）是计算密集的——一个 8K 的 prompt 需要大量矩阵乘法，GPU 几乎满载。Decode（生成 token）是带宽密集的——一次只处理一个 token，GPU 大部分时间在等数据。</p>
 <p>如果 prefilling 和 decoding 在同一个 batch 中混合，就会出现问题：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>场景 1: [P1(8K) + D2 + D3 + D4]
@@ -247,7 +247,7 @@
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>├── 所有请求都在 decode
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>└── GPU 算力大量闲置，带宽是瓶颈
 </span></code></pre></div>
-<h3 id="42-chunked-prefill">4.2 Chunked Prefill<a class="headerlink" href="#42-chunked-prefill" title="Permanent link">&para;</a></h3>
+<h3 id="chunked-prefill">Chunked Prefill<a class="headerlink" href="#chunked-prefill" title="Permanent link">&para;</a></h3>
 <p>Sarathi（Agrawal et al., 2023）提出的方案：将长 prefill 拆成小块（chunks），和 decode 请求交错执行：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Iteration 0: [P1_chunk0 + D2 + D3 + D4] → P1 前 512 token 做 prefill
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Iteration 1: [P1_chunk1 + D2 + D3 + D4] → P1 后 512 token 做 prefill
@@ -257,8 +257,8 @@
 </span></code></pre></div>
 <p>这样 GPU 始终有充足的计算量，不会因为纯 decode 阶段而利用率暴跌。SGLang 和 vLLM 的最新版本都支持这种调度策略。</p>
 <hr />
-<h2 id="5-并行策略tppp-与-dp">5. 并行策略：TP、PP 与 DP<a class="headerlink" href="#5-并行策略tppp-与-dp" title="Permanent link">&para;</a></h2>
-<h3 id="51-张量并行tensor-parallelism-tp">5.1 张量并行（Tensor Parallelism, TP）<a class="headerlink" href="#51-张量并行tensor-parallelism-tp" title="Permanent link">&para;</a></h3>
+<h2 id="并行策略tppp-与-dp">并行策略：TP、PP 与 DP<a class="headerlink" href="#并行策略tppp-与-dp" title="Permanent link">&para;</a></h2>
+<h3 id="张量并行tensor-parallelism-tp">张量并行（Tensor Parallelism, TP）<a class="headerlink" href="#张量并行tensor-parallelism-tp" title="Permanent link">&para;</a></h3>
 <p>将模型的每一层切分到多个 GPU 上并行计算。以 Transformer 为例：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>单层 MLP: 输入 x → 线性投影 W₁ → 激活 → 线性投影 W₂ → 输出
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
@@ -269,7 +269,7 @@
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>AllReduce: partial_out_0 + partial_out_1 = 最终输出
 </span></code></pre></div>
 <p>TP 的通信开销是 AllReduce，每层的激活值需要在 GPU 间同步。TP 数量通常不超过 8（对应 NVLink 的拓扑）。</p>
-<h3 id="52-流水线并行pipeline-parallelism-pp">5.2 流水线并行（Pipeline Parallelism, PP）<a class="headerlink" href="#52-流水线并行pipeline-parallelism-pp" title="Permanent link">&para;</a></h3>
+<h3 id="流水线并行pipeline-parallelism-pp">流水线并行（Pipeline Parallelism, PP）<a class="headerlink" href="#流水线并行pipeline-parallelism-pp" title="Permanent link">&para;</a></h3>
 <p>将模型按层切分，每个 GPU 负责连续的若干层：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>GPU 0:  Layer 0–9   → 输出传给 GPU 1
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>GPU 1:  Layer 10–19 → 输出传给 GPU 2
@@ -278,14 +278,14 @@
 </span></code></pre></div>
 <p>PP 的通信开销是点对点传输（P2P），比 AllReduce 小得多。但 PP 有「流水线气泡」问题——当 batch size 不够大时，GPU 会有空闲等待期。</p>
 <p><strong>Micro-Batching</strong> 是缓解气泡的方法：将一个 batch 分成多个 micro-batch，让它们像流水线一样交错执行。</p>
-<h3 id="53-数据并行data-parallelism-dp">5.3 数据并行（Data Parallelism, DP）<a class="headerlink" href="#53-数据并行data-parallelism-dp" title="Permanent link">&para;</a></h3>
+<h3 id="数据并行data-parallelism-dp">数据并行（Data Parallelism, DP）<a class="headerlink" href="#数据并行data-parallelism-dp" title="Permanent link">&para;</a></h3>
 <p>将完整模型复制到多个节点上，每个节点处理不同的请求：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>GPU 0/1/2/3:  完整模型副本 A —— 处理请求组 1
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>GPU 4/5/6/7:  完整模型副本 B —— 处理请求组 2
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>GPU 8/9/10/11: 完整模型副本 C —— 处理请求组 3
 </span></code></pre></div>
 <p>DP 没有跨节点通信（每个副本独立），但显存占用是模型大小的倍数。</p>
-<h3 id="54-组合策略">5.4 组合策略<a class="headerlink" href="#54-组合策略" title="Permanent link">&para;</a></h3>
+<h3 id="组合策略">组合策略<a class="headerlink" href="#组合策略" title="Permanent link">&para;</a></h3>
 <p>实际部署中，三种并行方式组合使用：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>以 405B 模型、8×8 GPU 集群为例：
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
@@ -310,10 +310,10 @@
 <li><strong>DP 增加</strong>：总吞吐线性增长，但显存线性增长</li>
 </ul>
 <hr />
-<h2 id="6-投机解码speculative-decoding用带宽换延迟">6. 投机解码（Speculative Decoding）：用带宽换延迟<a class="headerlink" href="#6-投机解码speculative-decoding用带宽换延迟" title="Permanent link">&para;</a></h2>
-<h3 id="61-核心洞察">6.1 核心洞察<a class="headerlink" href="#61-核心洞察" title="Permanent link">&para;</a></h3>
+<h2 id="投机解码speculative-decoding用带宽换延迟">投机解码（Speculative Decoding）：用带宽换延迟<a class="headerlink" href="#投机解码speculative-decoding用带宽换延迟" title="Permanent link">&para;</a></h2>
+<h3 id="核心洞察">核心洞察<a class="headerlink" href="#核心洞察" title="Permanent link">&para;</a></h3>
 <p>Decode 阶段每次只生成 1 个 token，但权重读取量是整个模型。如果能一次猜多个 token，然后让大模型一次验证，就能「均摊」权重读取的开销。</p>
-<h3 id="62-基本原理">6.2 基本原理<a class="headerlink" href="#62-基本原理" title="Permanent link">&para;</a></h3>
+<h3 id="基本原理">基本原理<a class="headerlink" href="#基本原理" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>草稿模型 M_draft（小模型，如 1–7B）:
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>1. 一次生成 K 个候选 token: [t₁, t₂, ..., t_K]
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
@@ -323,7 +323,7 @@
 </span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>4. 接受 token [t₁, ..., t_{j-1}]，从位置 j 重新生成
 </span></code></pre></div>
 <p><strong>关键</strong>：验证步骤可以在一次前向传播中完成（通过树状注意力）。如果草稿模型质量够高，平均每次前向能生成 2–3 个 token。</p>
-<h3 id="63-草稿模型选择">6.3 草稿模型选择<a class="headerlink" href="#63-草稿模型选择" title="Permanent link">&para;</a></h3>
+<h3 id="草稿模型选择">草稿模型选择<a class="headerlink" href="#草稿模型选择" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -351,39 +351,39 @@
 </tbody>
 </table>
 <p><strong>Medusa</strong>（Cai et al., 2024）的方法是在大模型顶部添加多个预测头，并行预测未来多个 token 的位置。所有预测头共享大模型的中间表示，不需要额外加载权重。</p>
-<h3 id="64-效果">6.4 效果<a class="headerlink" href="#64-效果" title="Permanent link">&para;</a></h3>
+<h3 id="效果">效果<a class="headerlink" href="#效果" title="Permanent link">&para;</a></h3>
 <p>在典型工作负载上，投机解码可以将 decode 延迟降低 1.5–2.5×。收益在生成长文本时更明显——因为 overhead（草稿模型的运行成本）被摊薄了。</p>
 <hr />
-<h2 id="7-推理引擎对比">7. 推理引擎对比<a class="headerlink" href="#7-推理引擎对比" title="Permanent link">&para;</a></h2>
-<h3 id="71-vllm">7.1 vLLM<a class="headerlink" href="#71-vllm" title="Permanent link">&para;</a></h3>
+<h2 id="推理引擎对比">推理引擎对比<a class="headerlink" href="#推理引擎对比" title="Permanent link">&para;</a></h2>
+<h3 id="vllm">vLLM<a class="headerlink" href="#vllm" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>核心创新</strong>：PagedAttention，分页式 KV Cache 管理</li>
 <li><strong>优势</strong>：高吞吐、显存碎片率低、开源生态最完善</li>
 <li><strong>适用</strong>：通用在线服务、多并发场景</li>
 <li><strong>局限</strong>：功能迭代快但稳定性仍在打磨中</li>
 </ul>
-<h3 id="72-tensorrt-llm">7.2 TensorRT-LLM<a class="headerlink" href="#72-tensorrt-llm" title="Permanent link">&para;</a></h3>
+<h3 id="tensorrt-llm">TensorRT-LLM<a class="headerlink" href="#tensorrt-llm" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>核心创新</strong>：英伟达官方优化，算子融合到极致</li>
 <li><strong>优势</strong>：单请求延迟最低、FP8 性能最优、与硬件深度协同</li>
 <li><strong>适用</strong>：延迟敏感型应用、英伟达硬件环境</li>
 <li><strong>局限</strong>：闭源（部分）、功能迭代慢、调试困难</li>
 </ul>
-<h3 id="73-sglang">7.3 SGLang<a class="headerlink" href="#73-sglang" title="Permanent link">&para;</a></h3>
+<h3 id="sglang">SGLang<a class="headerlink" href="#sglang" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>核心创新</strong>：结构化生成（Structured Generation）+ RadixAttention</li>
 <li><strong>优势</strong>：KV Cache 复用效率极高（前缀树缓存）、支持复杂输出约束</li>
 <li><strong>适用</strong>：Agent 场景（工具调用、多轮对话）、结构化输出</li>
 <li><strong>局限</strong>：社区规模较小</li>
 </ul>
-<h3 id="74-deepspeed-inference">7.4 DeepSpeed Inference<a class="headerlink" href="#74-deepspeed-inference" title="Permanent link">&para;</a></h3>
+<h3 id="deepspeed-inference">DeepSpeed Inference<a class="headerlink" href="#deepspeed-inference" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>核心创新</strong>：ZeRO-Inference 允许 GPU+CPU+NVMe 异构存储</li>
 <li><strong>优势</strong>：可以用有限显存跑超大模型（如单卡 24GB 跑 175B）</li>
 <li><strong>适用</strong>：显存受限环境、离线批处理</li>
 <li><strong>局限</strong>：延迟较高、更适合吞吐而非在线服务</li>
 </ul>
-<h3 id="75-选择建议">7.5 选择建议<a class="headerlink" href="#75-选择建议" title="Permanent link">&para;</a></h3>
+<h3 id="选择建议">选择建议<a class="headerlink" href="#选择建议" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -416,7 +416,7 @@
 </tbody>
 </table>
 <hr />
-<h2 id="8-多模态推理从文本到视觉">8. 多模态推理：从文本到视觉<a class="headerlink" href="#8-多模态推理从文本到视觉" title="Permanent link">&para;</a></h2>
+<h2 id="多模态推理从文本到视觉">多模态推理：从文本到视觉<a class="headerlink" href="#多模态推理从文本到视觉" title="Permanent link">&para;</a></h2>
 <p>多模态 LLM（如 GPT-4V、Claude 3、Qwen-VL）的推理架构在文本基础上增加了视觉编码器（通常是 ViT）：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>文本输入 → Tokenizer → Text Embedding
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>                          ↘
@@ -427,7 +427,7 @@
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>                          ↓
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>                     输出文本
 </span></code></pre></div>
-<h3 id="81-视觉编码器的瓶颈">8.1 视觉编码器的瓶颈<a class="headerlink" href="#81-视觉编码器的瓶颈" title="Permanent link">&para;</a></h3>
+<h3 id="视觉编码器的瓶颈">视觉编码器的瓶颈<a class="headerlink" href="#视觉编码器的瓶颈" title="Permanent link">&para;</a></h3>
 <p>ViT 处理高分辨率图像时，token 数量巨大：</p>
 <ul>
 <li>224×224 图像、patch size 14 → <span class="arithmatex">\((224/14)^2 = 256\)</span> 个视觉 token</li>
@@ -439,7 +439,7 @@
 <li><strong>视觉 token 压缩</strong>：用可学习的压缩层将视觉 token 数量从 N 降到 M（如 LLaVA 的 token merging）</li>
 <li><strong>延迟加载</strong>：视觉编码器的权重可以常驻显存（较小），而 LLM 权重按需加载</li>
 </ul>
-<h3 id="82-视频推理">8.2 视频推理<a class="headerlink" href="#82-视频推理" title="Permanent link">&para;</a></h3>
+<h3 id="视频推理">视频推理<a class="headerlink" href="#视频推理" title="Permanent link">&para;</a></h3>
 <p>视频帧的连续处理需要考虑时间维度的 KV Cache 复用：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>Frame 1: 视觉编码 → KV Cache [V₁]
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>Frame 2: 视觉编码 → KV Cache [V₁, V₂]（V₁ 可复用）
@@ -447,8 +447,8 @@
 </span></code></pre></div>
 <p>但如果视频很长（如 1 小时的直播流），KV Cache 会无限增长。此时需要滑动窗口策略（只保留最近 N 帧的 KV）。</p>
 <hr />
-<h2 id="9-部署模式云边端">9. 部署模式：云、边、端<a class="headerlink" href="#9-部署模式云边端" title="Permanent link">&para;</a></h2>
-<h3 id="91-云端部署">9.1 云端部署<a class="headerlink" href="#91-云端部署" title="Permanent link">&para;</a></h3>
+<h2 id="部署模式云边端">部署模式：云、边、端<a class="headerlink" href="#部署模式云边端" title="Permanent link">&para;</a></h2>
+<h3 id="云端部署">云端部署<a class="headerlink" href="#云端部署" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>云端部署（数百到数千 GPU）
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>├── 模型：70B–405B+
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>├── 并发：1000+ QPS
@@ -457,7 +457,7 @@
 </span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>└── 框架：vLLM / TensorRT-LLM / TGI
 </span></code></pre></div>
 <p>核心挑战：弹性伸缩、多租户隔离、成本优化（ spot instance + checkpoint 恢复）。</p>
-<h3 id="92-边缘部署">9.2 边缘部署<a class="headerlink" href="#92-边缘部署" title="Permanent link">&para;</a></h3>
+<h3 id="边缘部署">边缘部署<a class="headerlink" href="#边缘部署" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>边缘部署（单节点 4–8 GPU）
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>├── 模型：7B–70B
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>├── 并发：10–100 QPS
@@ -466,7 +466,7 @@
 </span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>└── 框架：vLLM / TensorRT-LLM
 </span></code></pre></div>
 <p>核心挑战：网络带宽受限（相比云端内部网络）、稳定性要求更高（难以热迁移）。</p>
-<h3 id="93-端侧部署">9.3 端侧部署<a class="headerlink" href="#93-端侧部署" title="Permanent link">&para;</a></h3>
+<h3 id="端侧部署">端侧部署<a class="headerlink" href="#端侧部署" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>端侧部署（单 GPU 或无 GPU）
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>├── 模型：1B–7B（量化后）
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>├── 并发：单用户
@@ -476,7 +476,7 @@
 </span></code></pre></div>
 <p>核心挑战：内存极其有限（几 GB 到几十 GB）、功耗约束、需要极端量化（INT4/INT3 甚至混合精度）。</p>
 <hr />
-<h2 id="10-总结">10. 总结<a class="headerlink" href="#10-总结" title="Permanent link">&para;</a></h2>
+<h2 id="总结">总结<a class="headerlink" href="#总结" title="Permanent link">&para;</a></h2>
 <p>LLM 推理架构的设计本质是在多个约束之间找最优解：</p>
 <ul>
 <li><strong>延迟 vs 吞吐</strong>：低延迟要求小 batch、大 TP；高吞吐要求大 batch、大 DP</li>
@@ -569,12 +569,23 @@
     }
   });
 
-  // Add section numbers to h2 in article pages
+  // Add section numbers to h2 and h3 in article pages
   const isArticle = document.querySelector('.md-typeset h1');
   if (isArticle) {
     const h2s = document.querySelectorAll('.md-typeset h2');
     h2s.forEach(function(h2, i) {
-      h2.setAttribute('data-section', (i + 1).toString().padStart(2, '0'));
+      const h2Num = (i + 1).toString().padStart(2, '0');
+      h2.setAttribute('data-section', h2Num);
+
+      let next = h2.nextElementSibling;
+      let h3Count = 1;
+      while (next && !next.matches('h2')) {
+        if (next.matches('h3')) {
+          next.setAttribute('data-section', h2Num + '.' + h3Count);
+          h3Count++;
+        }
+        next = next.nextElementSibling;
+      }
     });
   }
 })();

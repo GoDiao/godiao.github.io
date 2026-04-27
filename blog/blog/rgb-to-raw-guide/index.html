@@ -144,7 +144,7 @@
 <h1 id="rgb-to-raw-图像重建完整指南">RGB-to-RAW 图像重建完整指南<a class="headerlink" href="#rgb-to-raw-图像重建完整指南" title="Permanent link">&para;</a></h1>
 <p>从 RGB 图像逆向重建相机 RAW 数据，是计算机视觉中一个看似小众但实际影响深远的课题。这篇文章是对整个技术栈的系统梳理，涵盖前向 ISP 管道、逆向 Unprocessing 方法、深度学习方案，以及工程实践中的关键经验。</p>
 <hr />
-<h2 id="1-从一个直觉问题开始">1. 从一个直觉问题开始<a class="headerlink" href="#1-从一个直觉问题开始" title="Permanent link">&para;</a></h2>
+<h2 id="从一个直觉问题开始">从一个直觉问题开始<a class="headerlink" href="#从一个直觉问题开始" title="Permanent link">&para;</a></h2>
 <p>如果你拍了一张照片，你的手机或相机其实经历了一条很长的处理链路：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>光线 → 镜头 → CMOS 传感器 → RAW 数据 → ISP → 你看到的 JPEG/HEIC
 </span></code></pre></div>
@@ -152,35 +152,35 @@
 <p>那么问题来了：<strong>如果我们只有处理后的 RGB 图像，能反推出 RAW 数据吗？</strong></p>
 <p>答案是：可以，而且这件事在很多场景下都很有价值。</p>
 <hr />
-<h2 id="2-为什么需要-rgb-to-raw">2. 为什么需要 RGB-to-RAW？<a class="headerlink" href="#2-为什么需要-rgb-to-raw" title="Permanent link">&para;</a></h2>
+<h2 id="为什么需要-rgb-to-raw">为什么需要 RGB-to-RAW？<a class="headerlink" href="#为什么需要-rgb-to-raw" title="Permanent link">&para;</a></h2>
 <p>你可能会问，既然相机本身就能直接输出 RAW，为什么还要费劲从 RGB 反推回去？</p>
 <p><strong>数据稀缺性。</strong> 训练一个高质量的 RAW 域模型（比如去噪、超分、HDR 合成）需要大量配对的真实 RAW 数据。但 RAW 数据的获取成本很高——你需要特定型号的相机、受控的拍摄环境、以及精确的标定流程。相比之下，RGB 图像几乎零成本（随便一个手机就能拍）。</p>
 <p><strong>迁移学习与域适应。</strong> 很多下游任务在 RAW 域表现更好，因为 RAW 数据保留了传感器级别的物理特性（噪声模型、线性光响应、完整的动态范围）。如果你能把现有的海量 RGB 数据「反处理」回 RAW 域，就相当于凭空获得了大量训练数据。</p>
 <p><strong>端到端 VLA 系统。</strong> 在机器人视觉和具身智能系统中，直接从 RAW 数据进行处理可以避免 ISP 引入的色彩偏移和压缩伪影，这对需要精确感知的任务（如抓取、导航）至关重要。</p>
 <p><strong>隐私与安全分析。</strong> 在图像取证领域，判断一张 JPEG 图像是否经过篡改，有时需要分析其「原始」状态应有的特征——这就需要逆向推断 RAW 数据。</p>
 <hr />
-<h2 id="3-理解前向-isp-管道">3. 理解前向 ISP 管道<a class="headerlink" href="#3-理解前向-isp-管道" title="Permanent link">&para;</a></h2>
+<h2 id="理解前向-isp-管道">理解前向 ISP 管道<a class="headerlink" href="#理解前向-isp-管道" title="Permanent link">&para;</a></h2>
 <p>要做逆向重建，首先得彻底理解正向过程。一个典型的相机 ISP 管道包含以下步骤（按执行顺序）：</p>
-<h3 id="31-黑电平补偿black-level-compensation">3.1 黑电平补偿（Black Level Compensation）<a class="headerlink" href="#31-黑电平补偿black-level-compensation" title="Permanent link">&para;</a></h3>
+<h3 id="黑电平补偿black-level-compensation">黑电平补偿（Black Level Compensation）<a class="headerlink" href="#黑电平补偿black-level-compensation" title="Permanent link">&para;</a></h3>
 <p>传感器的像素即使在完全黑暗的环境下，也不会输出精确的 0。这个非零的基底值就是<strong>黑电平（Black Level）</strong>。例如，一个 14-bit 的传感器，黑电平可能在 64 左右。</p>
 <pre class="arithmatex">\[
 \text{pixel\_adjusted} = \text{pixel\_raw} - \text{black\_level}
 \]</pre>
 <p>如果不减去黑电平，后续的线性运算（如白平衡乘法）会引入偏差。</p>
-<h3 id="32-镜头阴影校正lens-shading-correction">3.2 镜头阴影校正（Lens Shading Correction）<a class="headerlink" href="#32-镜头阴影校正lens-shading-correction" title="Permanent link">&para;</a></h3>
+<h3 id="镜头阴影校正lens-shading-correction">镜头阴影校正（Lens Shading Correction）<a class="headerlink" href="#镜头阴影校正lens-shading-correction" title="Permanent link">&para;</a></h3>
 <p>镜头的光学特性导致传感器边缘接收到的光线比中心少，形成<strong>暗角（vignetting）</strong>。校正方法是对每个像素位置施加一个增益，使得均匀光照下整个画面的亮度一致。</p>
 <pre class="arithmatex">\[
 \text{pixel\_corrected}(x, y) = \text{pixel\_adjusted}(x, y) \times LSC(x, y)
 \]</pre>
 <p>其中 <span class="arithmatex">\(LSC(x, y)\)</span> 是一个预标定的增益表。</p>
-<h3 id="33-白平衡white-balance">3.3 白平衡（White Balance）<a class="headerlink" href="#33-白平衡white-balance" title="Permanent link">&para;</a></h3>
+<h3 id="白平衡white-balance">白平衡（White Balance）<a class="headerlink" href="#白平衡white-balance" title="Permanent link">&para;</a></h3>
 <p>现实世界的光源有不同的色温——日光偏蓝（<sub>6500K），白炽灯偏黄（</sub>2700K）。白平衡的目标是让场景中的白色物体在图像中依然显示为白色，无论光源色温如何。</p>
 <p>实现方式是对 R、G、B 三个通道施加不同的增益：</p>
 <pre class="arithmatex">\[
 \begin{bmatrix} R' \\ G' \\ B' \end{bmatrix} = \begin{bmatrix} g_R &amp; 0 &amp; 0 \\ 0 &amp; g_G &amp; 0 \\ 0 &amp; 0 &amp; g_B \end{bmatrix} \begin{bmatrix} R \\ G \\ B \end{bmatrix}
 \]</pre>
 <p>通常 <span class="arithmatex">\(g_G = 1.0\)</span>（以绿色为基准），<span class="arithmatex">\(g_R\)</span> 和 <span class="arithmatex">\(g_B\)</span> 根据光源色温调整。</p>
-<h3 id="34-去马赛克demosaicing">3.4 去马赛克（Demosaicing）<a class="headerlink" href="#34-去马赛克demosaicing" title="Permanent link">&para;</a></h3>
+<h3 id="去马赛克demosaicing">去马赛克（Demosaicing）<a class="headerlink" href="#去马赛克demosaicing" title="Permanent link">&para;</a></h3>
 <p>这是整个 ISP 管道中最关键、也最不可逆的一步。</p>
 <p>大多数相机使用<strong>拜耳滤波阵列（Bayer Color Filter Array）</strong>——每个像素位置只有一个颜色通道的滤波器。最常见的 RGGB 排列如下：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>R  G  R  G  R  G
@@ -197,19 +197,19 @@
 </ul>
 <p>但这种简单方法在高频区域（如细密纹理、锐利边缘）会产生严重的<strong>摩尔纹</strong>和<strong>拉链伪影</strong>。现代 ISP 使用更复杂的算法——如 AHD（Adaptive Homogeneity-Directed）、AMaZE 等——来减少这些伪影。</p>
 <p>关键点：<strong>去马赛克本质上是一个信息丢失的过程</strong>——你从单通道插值出三通道，新增的信息不是「真实」的，而是算法猜测的。</p>
-<h3 id="35-色彩校正矩阵color-correction-matrix-ccm">3.5 色彩校正矩阵（Color Correction Matrix, CCM）<a class="headerlink" href="#35-色彩校正矩阵color-correction-matrix-ccm" title="Permanent link">&para;</a></h3>
+<h3 id="色彩校正矩阵color-correction-matrix-ccm">色彩校正矩阵（Color Correction Matrix, CCM）<a class="headerlink" href="#色彩校正矩阵color-correction-matrix-ccm" title="Permanent link">&para;</a></h3>
 <p>传感器的 RGB 响应曲线与标准色彩空间（如 sRGB）的 RGB 基色不匹配。CCM 通过一个 <span class="arithmatex">\(3 \times 3\)</span> 矩阵将传感器色彩空间映射到标准色彩空间：</p>
 <pre class="arithmatex">\[
 \begin{bmatrix} R_{sRGB} \\ G_{sRGB} \\ B_{sRGB} \end{bmatrix} = \begin{bmatrix} c_{11} &amp; c_{12} &amp; c_{13} \\ c_{21} &amp; c_{22} &amp; c_{23} \\ c_{31} &amp; c_{32} &amp; c_{33} \end{bmatrix} \begin{bmatrix} R_{sensor} \\ G_{sensor} \\ B_{sensor} \end{bmatrix}
 \]</pre>
 <p>这个矩阵通常通过拍摄标准色卡（如 X-Rite ColorChecker）标定得到。不同相机型号、甚至不同固件版本的 CCM 都可能不同。</p>
-<h3 id="36-伽马校正与色调映射gamma--tone-mapping">3.6 伽马校正与色调映射（Gamma &amp; Tone Mapping）<a class="headerlink" href="#36-伽马校正与色调映射gamma--tone-mapping" title="Permanent link">&para;</a></h3>
+<h3 id="伽马校正与色调映射gamma--tone-mapping">伽马校正与色调映射（Gamma &amp; Tone Mapping）<a class="headerlink" href="#伽马校正与色调映射gamma--tone-mapping" title="Permanent link">&para;</a></h3>
 <p>传感器的响应是线性的——光子数翻倍，信号翻倍。但人眼对暗部的亮度变化比亮部更敏感。为了让图像在显示设备上「看起来自然」，ISP 会对线性信号施加一个非线性变换：</p>
 <pre class="arithmatex">\[
 \text{output} = \text{input}^{\gamma}, \quad \gamma \approx 2.2
 \]</pre>
 <p>现代相机通常使用更复杂的色调映射曲线（不只是简单的幂函数），以在保留高光和阴影细节的同时提供悦目的对比度。<strong>这一步是 ISP 中动态范围压缩最大的环节</strong>——线性空间 12-14 bit 的信息被压缩到 8 bit 的显示范围。</p>
-<h3 id="37-isp-管道全貌">3.7 ISP 管道全貌<a class="headerlink" href="#37-isp-管道全貌" title="Permanent link">&para;</a></h3>
+<h3 id="isp-管道全貌">ISP 管道全貌<a class="headerlink" href="#isp-管道全貌" title="Permanent link">&para;</a></h3>
 <p>把所有步骤串起来：</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>RAW 传感器数据
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  │
@@ -226,10 +226,10 @@
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>     输出 RGB 图像
 </span></code></pre></div>
 <hr />
-<h2 id="4-逆向重建unprocessing-管道">4. 逆向重建：Unprocessing 管道<a class="headerlink" href="#4-逆向重建unprocessing-管道" title="Permanent link">&para;</a></h2>
+<h2 id="逆向重建unprocessing-管道">逆向重建：Unprocessing 管道<a class="headerlink" href="#逆向重建unprocessing-管道" title="Permanent link">&para;</a></h2>
 <p>理解了前向过程，逆向重建的思路就很自然了：<strong>反着走一遍 ISP 管道</strong>。</p>
 <p>这个方向的开创性工作来自 Brooks 等人的论文 <a href="https://arxiv.org/abs/1811.11721"><em>Unprocessing Images for Learned Raw Denoising</em></a>（CVPR 2020）。他们的核心洞察是：ISP 的每一步都可以被显式地求逆，只要你知道（或估计出）对应的参数。</p>
-<h3 id="41-逆向步骤详解">4.1 逆向步骤详解<a class="headerlink" href="#41-逆向步骤详解" title="Permanent link">&para;</a></h3>
+<h3 id="逆向步骤详解">逆向步骤详解<a class="headerlink" href="#逆向步骤详解" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -290,23 +290,23 @@
 </tr>
 </tbody>
 </table>
-<h3 id="42-关键难点">4.2 关键难点<a class="headerlink" href="#42-关键难点" title="Permanent link">&para;</a></h3>
+<h3 id="关键难点">关键难点<a class="headerlink" href="#关键难点" title="Permanent link">&para;</a></h3>
 <p>听起来简单，但实际操作中有几个核心难点：</p>
 <p><strong>色调映射不可完全逆。</strong> 伽马校正和色调映射将 12-14 bit 的线性信号压缩到 8 bit。信息被量化损失了，<span class="arithmatex">\(f^{-1}\)</span> 无法完美恢复原始值。特别是高光区域（tone curve 趋于平坦的部分），逆函数的斜率极大，微小的 RGB 值变化会导致巨大的线性值波动。</p>
 <p><strong>CCM 矩阵不可精确获得。</strong> 每张照片的 CCM 取决于当时的拍摄参数（光源、白平衡模式、相机型号）。如果照片是别人拍的、或者 EXIF 数据丢失，你只能猜测一个「典型」矩阵。而 CCM 逆矩阵的误差会在后续步骤中被放大。</p>
 <p><strong>去马赛克的逆不是插值的逆。</strong> 去马赛克是「多对少」的映射（从单通道猜出三通道），其逆操作「少对多」是降采样——你只能从 RGB 图像中按 Bayer 模式提取对应通道的像素。这意味着去马赛克阶段「猜」出来的信息被丢弃了，恢复的 RAW 数据在空间分辨率上等于原始传感器。</p>
 <p><strong>白平衡参数丢失。</strong> 如果你无法获取原始的白平衡增益参数（比如照片已经去除了 EXIF），就需要从 RGB 图像本身估计场景光源色温。这是一个经典的色彩恒常性（Color Constancy）问题，本身就是一个活跃的研究方向。</p>
 <hr />
-<h2 id="5-深度学习方法让神经网络学会逆向重建">5. 深度学习方法：让神经网络学会逆向重建<a class="headerlink" href="#5-深度学习方法让神经网络学会逆向重建" title="Permanent link">&para;</a></h2>
+<h2 id="深度学习方法让神经网络学会逆向重建">深度学习方法：让神经网络学会逆向重建<a class="headerlink" href="#深度学习方法让神经网络学会逆向重建" title="Permanent link">&para;</a></h2>
 <p>解析方法（Unprocessing）的问题在于：它依赖精确的 ISP 参数，而这些参数往往不可得。于是自然地，人们开始用深度学习来端到端地学习 RGB → RAW 的映射。</p>
-<h3 id="51-为什么需要神经网络">5.1 为什么需要神经网络？<a class="headerlink" href="#51-为什么需要神经网络" title="Permanent link">&para;</a></h3>
+<h3 id="为什么需要神经网络">为什么需要神经网络？<a class="headerlink" href="#为什么需要神经网络" title="Permanent link">&para;</a></h3>
 <p>解析方法假设 ISP 管道是已知且可参数化的。但现实中的 ISP 管道远比教科书描述的复杂——厂商会在管道中插入各种私有算法（自适应降噪、局部色调映射、边缘增强等），这些是黑盒。神经网络可以隐式地学习这些复杂的非线性映射，而不需要显式建模每一个步骤。</p>
-<h3 id="52-网络架构设计考量">5.2 网络架构设计考量<a class="headerlink" href="#52-网络架构设计考量" title="Permanent link">&para;</a></h3>
+<h3 id="网络架构设计考量">网络架构设计考量<a class="headerlink" href="#网络架构设计考量" title="Permanent link">&para;</a></h3>
 <p>设计一个 RGB-to-RAW 网络时，几个关键的选择：</p>
 <p><strong>输入输出尺度。</strong> RGB 图像是 3 通道的，而 Bayer RAW 本质上是 1 通道的空间多路复用。一种常见的做法是将 RAW 按照拜耳模式重新排列为 4 通道（RGGB），然后让网络输出这个 4 通道的「打包」RAW。这样输出尺寸是输入的 <span class="arithmatex">\(1/2\)</span>（空间分辨率减半，通道数从 3 增加到 4）。</p>
 <p><strong>感受野需求。</strong> 去马赛克的逆操作需要理解局部邻域的色彩分布来判断每个像素位置的正确通道值。网络需要足够的感受野来捕捉色彩相关性，但也不能太大导致计算开销过高。UNet 架构在这类像素级预测任务上表现良好——它的编码器-解码器结构天然提供了多尺度感受野。</p>
 <p><strong>频域考虑。</strong> RAW 数据中的噪声具有特定的频率特征（由于 CFA 模式的存在）。在损失函数中加入频域约束（如 FFT 损失）可以帮助网络生成更真实的 RAW 频谱分布。</p>
-<h3 id="53-损失函数设计">5.3 损失函数设计<a class="headerlink" href="#53-损失函数设计" title="Permanent link">&para;</a></h3>
+<h3 id="损失函数设计">损失函数设计<a class="headerlink" href="#损失函数设计" title="Permanent link">&para;</a></h3>
 <p>训练 RGB-to-RAW 网络通常使用多种损失的组合：</p>
 <ul>
 <li><strong>L1 / L2 重建损失</strong>：逐像素衡量预测 RAW 与真实 RAW 的差异。L1 在避免模糊方面优于 L2。</li>
@@ -314,7 +314,7 @@
 <li><strong>对抗损失（Adversarial Loss）</strong>：使用判别器来确保生成的 RAW 数据在统计分布上接近真实 RAW，特别是噪声分布。</li>
 <li><strong>频域一致性损失</strong>：确保重建 RAW 的傅里叶频谱与真实 RAW 的频谱一致。</li>
 </ul>
-<h3 id="54-混合架构解析方法--神经网络修正">5.4 混合架构：解析方法 + 神经网络修正<a class="headerlink" href="#54-混合架构解析方法--神经网络修正" title="Permanent link">&para;</a></h3>
+<h3 id="混合架构解析方法--神经网络修正">混合架构：解析方法 + 神经网络修正<a class="headerlink" href="#混合架构解析方法--神经网络修正" title="Permanent link">&para;</a></h3>
 <p>一种在实践中表现良好的方案是<strong>混合架构</strong>——先用 Unprocessing 管道（已知参数的部分）做粗略的逆向重建，再用神经网络学习 Unprocessing 结果与真实 RAW 之间的残差。</p>
 <ol>
 <li><strong>多尺度特征提取</strong>：使用带有残差连接的 UNet 结构，在多个尺度上提取 RGB 图像的色彩和纹理特征</li>
@@ -348,10 +348,10 @@
 </table>
 <p>PSNR 提升 4 dB 在图像重建领域是显著的进步——这意味着重建误差降低了一个数量级。</p>
 <hr />
-<h2 id="6-跨厂商-raw-格式差异分析">6. 跨厂商 RAW 格式差异分析<a class="headerlink" href="#6-跨厂商-raw-格式差异分析" title="Permanent link">&para;</a></h2>
+<h2 id="跨厂商-raw-格式差异分析">跨厂商 RAW 格式差异分析<a class="headerlink" href="#跨厂商-raw-格式差异分析" title="Permanent link">&para;</a></h2>
 <p>在实际应用中，一个常被忽视的挑战是：<strong>不同相机厂商的 RAW 格式千差万别</strong>。</p>
 <p>Canon 的 CR2/CR3、Nikon 的 NEF、Sony 的 ARW、各手机厂商的 DNG——虽然它们都遵循 Bayer CFA 的基本原理，但在黑电平值、位深度、压缩方式、元数据组织上各有不同。要训练一个泛化性好的模型，必须理解这些差异。</p>
-<h3 id="61-分布间隙分析器">6.1 分布间隙分析器<a class="headerlink" href="#61-分布间隙分析器" title="Permanent link">&para;</a></h3>
+<h3 id="分布间隙分析器">分布间隙分析器<a class="headerlink" href="#分布间隙分析器" title="Permanent link">&para;</a></h3>
 <p>系统化的分布分析可以帮助量化不同 RAW 格式之间的统计特性差异。通过并行处理多种 RAW 格式，可以提取以下关键特征：</p>
 <ul>
 <li><strong>噪声分布</strong>：每个通道的噪声水平与信号强度的关系（信号相关噪声曲线）</li>
@@ -359,51 +359,51 @@
 <li><strong>色彩空间偏移</strong>：不同厂商传感器的色彩响应差异</li>
 <li><strong>空间频率特性</strong>：不同去马赛克算法引入的频率响应差异</li>
 </ul>
-<h3 id="62-关键发现">6.2 关键发现<a class="headerlink" href="#62-关键发现" title="Permanent link">&para;</a></h3>
+<h3 id="关键发现">关键发现<a class="headerlink" href="#关键发现" title="Permanent link">&para;</a></h3>
 <p>已有研究揭示了一些反直觉的发现：</p>
 <p><strong>黑电平不一致。</strong> 同一厂商的不同型号相机，黑电平可能不同。甚至在同一型号上，不同 ISO 设置下的黑电平也会漂移。这直接影响了「黑电平补偿」逆操作的精度。</p>
 <p><strong>压缩伪影的传递。</strong> 部分无损压缩的 RAW 格式（如 Sony 的 cRAW）在解压后并不完全等同于未经压缩的线性 RAW。这些微小的压缩伪影会在下游任务中被放大。</p>
 <p><strong>色彩响应的非线性。</strong> 传感器在高光区域（接近饱和的像素）的响应会偏离线性。简单的线性 CCM 逆变换在这些区域会产生明显的色彩偏差。</p>
 <hr />
-<h2 id="7-工程实践经验">7. 工程实践经验<a class="headerlink" href="#7-工程实践经验" title="Permanent link">&para;</a></h2>
-<h3 id="71-数据管道是第一优先级">7.1 数据管道是第一优先级<a class="headerlink" href="#71-数据管道是第一优先级" title="Permanent link">&para;</a></h3>
+<h2 id="工程实践经验">工程实践经验<a class="headerlink" href="#工程实践经验" title="Permanent link">&para;</a></h2>
+<h3 id="数据管道是第一优先级">数据管道是第一优先级<a class="headerlink" href="#数据管道是第一优先级" title="Permanent link">&para;</a></h3>
 <p>构建一个可靠的数据管道决定了后续一切的上限。</p>
 <ul>
 <li><strong>RAW 解码</strong>：使用 <code>rawpy</code>（基于 LibRaw）读取各种 RAW 格式。不同格式的元数据解析需要分别处理</li>
 <li><strong>配对数据生成</strong>：对同一场景，同时保存 RAW 和经过 ISP 处理后的 RGB 图像，作为训练的 ground truth 对</li>
 <li><strong>数据增强</strong>：在线性 RAW 空间做增强（而非 RGB 空间），因为 RAW 域的增强操作在物理上更有意义（如模拟不同的曝光时间、ISO 设置）</li>
 </ul>
-<h3 id="72-混合方法优于纯端到端">7.2 混合方法优于纯端到端<a class="headerlink" href="#72-混合方法优于纯端到端" title="Permanent link">&para;</a></h3>
+<h3 id="混合方法优于纯端到端">混合方法优于纯端到端<a class="headerlink" href="#混合方法优于纯端到端" title="Permanent link">&para;</a></h3>
 <p>实践表明，<strong>解析方法 + 神经网络修正</strong>的混合架构通常优于纯端到端的「RGB 输入 → RAW 输出」：</p>
 <ol>
 <li>先用 Unprocessing 管道（已知参数的部分）做粗略的逆向重建</li>
 <li>再用神经网络学习 Unprocessing 结果与真实 RAW 之间的残差</li>
 </ol>
 <p>这种方法的好处是：网络只需要学习 ISP 中的「未知部分」（如厂商私有算法、非线性效应），而不是从头学习整个逆向映射。训练收敛更快、泛化更好。</p>
-<h3 id="73-量化与部署">7.3 量化与部署<a class="headerlink" href="#73-量化与部署" title="Permanent link">&para;</a></h3>
+<h3 id="量化与部署">量化与部署<a class="headerlink" href="#量化与部署" title="Permanent link">&para;</a></h3>
 <p>在实际部署到移动端或嵌入式设备时，模型需要量化（INT8 或 FP16）。实践中的经验：</p>
 <ul>
 <li><strong>L1 损失比 L2 损失对量化更鲁棒</strong>——L2 训练的模型在量化后 PSNR 下降更明显</li>
 <li><strong>输出层的精度最关键</strong>——RAW 值的小幅偏差在经过 ISP 处理后会被放大，所以输出层需要保持更高的精度</li>
 </ul>
 <hr />
-<h2 id="8-性能评估不只是-psnr">8. 性能评估：不只是 PSNR<a class="headerlink" href="#8-性能评估不只是-psnr" title="Permanent link">&para;</a></h2>
+<h2 id="性能评估不只是-psnr">性能评估：不只是 PSNR<a class="headerlink" href="#性能评估不只是-psnr" title="Permanent link">&para;</a></h2>
 <p>PSNR 和 SSIM 是标准的图像质量指标，但在 RGB-to-RAW 任务中，它们不够全面。以下几个维度同样重要：</p>
-<h3 id="81-下游任务性能">8.1 下游任务性能<a class="headerlink" href="#81-下游任务性能" title="Permanent link">&para;</a></h3>
+<h3 id="下游任务性能">下游任务性能<a class="headerlink" href="#下游任务性能" title="Permanent link">&para;</a></h3>
 <p>重建的 RAW 数据最终是为了被使用。一种有效的验证方式是「端到端验证」——用重建的 RAW 数据训练一个去噪模型，然后在真实 RAW 数据上测试去噪效果。如果重建质量足够好，用重建数据训练的模型应该接近用真实 RAW 训练的模型。</p>
-<h3 id="82-噪声保真度">8.2 噪声保真度<a class="headerlink" href="#82-噪声保真度" title="Permanent link">&para;</a></h3>
+<h3 id="噪声保真度">噪声保真度<a class="headerlink" href="#噪声保真度" title="Permanent link">&para;</a></h3>
 <p>真实的 RAW 噪声遵循 Poisson-Gaussian 模型——信号相关的散粒噪声加上信号无关的读出噪声。通过噪声水平函数（Noise Level Function, NLF）可以衡量重建 RAW 的噪声分布是否与真实 RAW 一致。</p>
-<h3 id="83-频域分析">8.3 频域分析<a class="headerlink" href="#83-频域分析" title="Permanent link">&para;</a></h3>
+<h3 id="频域分析">频域分析<a class="headerlink" href="#频域分析" title="Permanent link">&para;</a></h3>
 <p>对 RAW 图像做 2D FFT，检查频谱分布。真实的 Bayer RAW 在频谱中有明显的 CFA 引起的频率模式。如果重建 RAW 缺少这些模式，说明网络在某种程度上「过度拟合」到了 RGB 域的频谱特征。</p>
 <hr />
-<h2 id="9-当前挑战与开放问题">9. 当前挑战与开放问题<a class="headerlink" href="#9-当前挑战与开放问题" title="Permanent link">&para;</a></h2>
+<h2 id="当前挑战与开放问题">当前挑战与开放问题<a class="headerlink" href="#当前挑战与开放问题" title="Permanent link">&para;</a></h2>
 <p>尽管 RGB-to-RAW 重建已经取得了显著进展，但仍有许多开放问题：</p>
 <p><strong>ISP 管道的多样性。</strong> 不同相机厂商的 ISP 管道差异巨大，甚至同一厂商的不同型号也不尽相同。一个通用的重建模型需要能够适应这种多样性——这本质上是一个域适应问题。</p>
 <p><strong>动态范围恢复。</strong> 伽马校正和色调映射将 12-14 bit 压缩到 8 bit，这个过程的不可逆性意味着高光和阴影区域的细节无法完美恢复。HDR 重建是一个相关但独立的研究方向。</p>
 <p><strong>时间一致性。</strong> 对于视频序列，逐帧独立重建会导致帧间闪烁和不一致。如何在时间维度上保持重建的一致性是一个工程上很重要但研究较少的问题。</p>
 <p><strong>零样本跨域泛化。</strong> 能否训练一个模型，在从未见过的相机型号上也能给出合理的 RAW 重建？这需要模型理解 ISP 管道的「通用结构」而非记忆特定相机的参数。</p>
 <hr />
-<h2 id="10-总结">10. 总结<a class="headerlink" href="#10-总结" title="Permanent link">&para;</a></h2>
+<h2 id="总结">总结<a class="headerlink" href="#总结" title="Permanent link">&para;</a></h2>
 <p>RGB-to-RAW 重建是一个连接了计算机视觉、计算摄影学和深度学习的交叉课题。它的核心挑战在于逆转一个信息有损的管道，但它所带来的应用价值——从大规模训练数据合成到端到端感知系统——让它成为一个值得投入的方向。</p>
 <p>几个关键经验：</p>
 <ul>
@@ -484,12 +484,23 @@
     }
   });
 
-  // Add section numbers to h2 in article pages
+  // Add section numbers to h2 and h3 in article pages
   const isArticle = document.querySelector('.md-typeset h1');
   if (isArticle) {
     const h2s = document.querySelectorAll('.md-typeset h2');
     h2s.forEach(function(h2, i) {
-      h2.setAttribute('data-section', (i + 1).toString().padStart(2, '0'));
+      const h2Num = (i + 1).toString().padStart(2, '0');
+      h2.setAttribute('data-section', h2Num);
+
+      let next = h2.nextElementSibling;
+      let h3Count = 1;
+      while (next && !next.matches('h2')) {
+        if (next.matches('h3')) {
+          next.setAttribute('data-section', h2Num + '.' + h3Count);
+          h3Count++;
+        }
+        next = next.nextElementSibling;
+      }
     });
   }
 })();
